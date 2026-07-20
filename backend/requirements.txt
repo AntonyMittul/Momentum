@@ -5,3 +5,4 @@ alembic
 python-dotenv
 google-generativeai
 pydantic
+fpdf2
