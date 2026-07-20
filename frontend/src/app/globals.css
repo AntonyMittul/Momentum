@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter);
+  --color-background: var(--theme-bg);
+  --color-foreground: var(--theme-fg);
+  --color-border: var(--theme-border);
+  --color-card: var(--theme-card);
+  --color-muted: var(--theme-muted);
+  --color-muted-foreground: var(--theme-muted-fg);
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground transition-colors duration-500 ease-in-out;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+:root, .theme-white {
+  --theme-bg: #ffffff;
+  --theme-fg: #111111;
+  --theme-border: #ececec;
+  --theme-card: #ffffff;
+  --theme-muted: #f9fafb;
+  --theme-muted-fg: #71717a;
+}
+
+.theme-black {
+  --theme-bg: #000000;
+  --theme-fg: #ffffff;
+  --theme-border: #333333;
+  --theme-card: #111111;
+  --theme-muted: #1a1a1a;
+  --theme-muted-fg: #a1a1aa;
+}
+
+.theme-charcoal {
+  --theme-bg: #36454F;
+  --theme-fg: #ffffff;
+  --theme-border: #555555;
+  --theme-card: #2f3c45;
+  --theme-muted: #43525c;
+  --theme-muted-fg: #a1a1aa;
+}
+
+/* Force remove shadows globally for flat design */
+* {
+  box-shadow: none !important;
+}
