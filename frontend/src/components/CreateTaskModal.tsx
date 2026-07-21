@@ -57,10 +57,10 @@ export default function CreateTaskModal({ onTaskCreated }: { onTaskCreated?: () 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="fixed bottom-12 right-12 w-14 h-14 bg-foreground text-background flex items-center justify-center hover:opacity-80 transition-colors shadow-none outline-none border border-transparent">
+      <DialogTrigger className="fixed bottom-20 right-4 md:bottom-12 md:right-12 w-14 h-14 bg-foreground text-background flex items-center justify-center hover:opacity-80 transition-colors shadow-none outline-none border border-transparent z-40">
         <Plus className="w-6 h-6" />
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-card border-border rounded-none shadow-none">
+      <DialogContent className="w-[95vw] sm:max-w-[425px] bg-card border-border rounded-none shadow-none p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="font-bold text-xl tracking-tight">New Task</DialogTitle>
         </DialogHeader>

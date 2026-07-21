@@ -71,25 +71,25 @@ export default function TaskCard({ task, onTaskUpdate }: { task: any, onTaskUpda
           </p>
         )}
         
-        <div className="flex gap-2 mt-4 items-center">
+        <div className="flex flex-wrap gap-2 mt-4 items-center">
           {task.priority === 'High' && !completed && (
-            <span className="w-2 h-2 rounded-full bg-red-500" title="High Priority" />
+            <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" title="High Priority" />
           )}
-          <span className="text-xs border border-border px-2 py-1 text-muted-foreground">
+          <span className="text-[10px] sm:text-xs border border-border px-2 py-1 text-muted-foreground whitespace-nowrap">
             {task.category}
           </span>
           {task.priority && (
-            <span className="text-xs border border-border px-2 py-1 text-muted-foreground">
+            <span className="text-[10px] sm:text-xs border border-border px-2 py-1 text-muted-foreground whitespace-nowrap">
               {task.priority}
             </span>
           )}
           {task.deadline && (
-            <span className="text-xs border border-border px-2 py-1 text-muted-foreground">
+            <span className="text-[10px] sm:text-xs border border-border px-2 py-1 text-muted-foreground whitespace-nowrap">
               {new Date(task.deadline).toLocaleDateString()}
             </span>
           )}
           
-          <div className="ml-auto flex items-center gap-4">
+          <div className="ml-auto flex items-center gap-4 shrink-0">
             <EditTaskModal task={task} onTaskUpdated={onTaskUpdate} />
             <button 
               onClick={handleDelete}

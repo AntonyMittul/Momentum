@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PenLine } from "lucide-react";
+import { Edit2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -52,10 +52,10 @@ export default function EditTaskModal({ task, onTaskUpdated }: { task: any, onTa
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="text-muted-foreground hover:text-foreground transition-colors focus:outline-none" aria-label="Edit Task">
-        <PenLine className="w-4 h-4" />
+      <DialogTrigger className="text-gray-400 hover:text-foreground transition-colors focus:outline-none">
+        <Edit2 className="w-4 h-4" />
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-card border-border rounded-none shadow-none">
+      <DialogContent className="w-[95vw] sm:max-w-[425px] bg-card border-border rounded-none shadow-none p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="font-bold text-xl tracking-tight">Edit Task</DialogTitle>
         </DialogHeader>
