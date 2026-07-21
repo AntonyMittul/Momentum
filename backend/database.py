@@ -6,10 +6,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# We fallback to sqlite if no DATABASE_URL is provided or if it's empty
-db_url_env = os.getenv("DATABASE_URL")
+# Find any environment variable that looks like database_url (case-insensitive)
+db_url_env = os.getenv("DATABASE_URL") or os.getenv("database_url") or os.getenv("Database_URL")
+
 if db_url_env and db_url_env.startswith("postgres://"):
     db_url_env = db_url_env.replace("postgres://", "postgresql://", 1)
+
+if os.getenv("RENDER") == "true" and not db_url_env:
+    raise ValueError("FATAL: We are on Render but no DATABASE_URL environment variable was found! Please add it to your Render Environment Variables.")
 
 SQLALCHEMY_DATABASE_URL = db_url_env if db_url_env else "sqlite:///./momentum.db"
 
