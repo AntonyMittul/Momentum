@@ -1,21 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchTasks, getMorningCoach, calculateMetrics, fetchNonNegotiables, toggleNonNegotiable } from "@/lib/api";
+import { fetchTasks, calculateMetrics, fetchNonNegotiables, toggleNonNegotiable } from "@/lib/api";
 import TaskCard from "@/components/TaskCard";
 import CreateTaskModal from "@/components/CreateTaskModal";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState<any[]>([]);
-  const [morningCoach, setMorningCoach] = useState<any>(null);
   const [nonNegotiables, setNonNegotiables] = useState<any[]>([]);
 
   const loadData = async () => {
     try {
-      const [tData, coachData, nnData] = await Promise.all([
+      const [tData, nnData] = await Promise.all([
         fetchTasks(),
-        getMorningCoach(),
         fetchNonNegotiables()
       ]);
       
@@ -27,7 +25,6 @@ export default function Dashboard() {
       });
       
       setTasks(sortedTData);
-      setMorningCoach(coachData);
       setNonNegotiables(nnData || []);
       await calculateMetrics();
     } catch (e) {
@@ -81,13 +78,6 @@ export default function Dashboard() {
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
           {getGreeting()}
         </h1>
-        {morningCoach && (
-          <div className="max-w-2xl">
-            <p className="text-lg text-gray-700 leading-relaxed font-medium">
-              {morningCoach.generated_message}
-            </p>
-          </div>
-        )}
       </section>
 
       {/* Header Section (Kept without changes below, removed mission) */}
