@@ -8,6 +8,9 @@ load_dotenv()
 
 # We fallback to sqlite if no DATABASE_URL is provided or if it's empty
 db_url_env = os.getenv("DATABASE_URL")
+if db_url_env and db_url_env.startswith("postgres://"):
+    db_url_env = db_url_env.replace("postgres://", "postgresql://", 1)
+
 SQLALCHEMY_DATABASE_URL = db_url_env if db_url_env else "sqlite:///./momentum.db"
 
 # SQLite requires this connect_args to avoid threading issues
