@@ -30,9 +30,10 @@ def get_morning_coach(db: Session = Depends(get_db)):
     
     prompt = f"""
     You are a calm, minimalist productivity coach for a single user.
-    Generate ONE short morning message (under 80 words) based on yesterday's performance.
+    Generate a short, supportive headline (1 or 2 lines maximum) based on yesterday's performance.
     - Realistic, supportive, never fake or toxic positive.
     - Acknowledge reality and encourage the next step.
+    DO NOT wrap the text in quotes.
     
     Yesterday's Stats:
     - Completion: {yesterday.completion_percentage if yesterday else 0}%
@@ -44,7 +45,7 @@ def get_morning_coach(db: Session = Depends(get_db)):
     
     try:
         response = model.generate_content(prompt)
-        msg_text = response.text.strip()
+        msg_text = response.text.strip().strip('"').strip("'")
     except Exception as e:
         msg_text = "Let's build on yesterday's momentum. Focus on completing your highest priority task first."
         

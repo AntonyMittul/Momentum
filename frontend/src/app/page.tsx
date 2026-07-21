@@ -83,8 +83,8 @@ export default function Dashboard() {
         </h1>
         {morningCoach && (
           <div className="max-w-2xl">
-            <p className="text-lg text-gray-700 leading-relaxed font-medium italic">
-              "{morningCoach.generated_message}"
+            <p className="text-lg text-gray-700 leading-relaxed font-medium">
+              {morningCoach.generated_message}
             </p>
           </div>
         )}
