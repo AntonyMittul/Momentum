@@ -18,7 +18,7 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
 
 @router.get("/", response_model=List[schemas.Task])
 def read_tasks(skip: int = 0, limit: int = 100, target_date: date = None, db: Session = Depends(get_db)):
-    query = db.query(models.Task)
+    query = db.query(models.Task).order_by(models.Task.created_at.desc())
     if target_date:
         query = query.filter(cast(models.Task.created_at, Date) == target_date)
     return query.offset(skip).limit(limit).all()

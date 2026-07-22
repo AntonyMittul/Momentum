@@ -1,7 +1,7 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export async function fetchTasks(targetDate?: string) {
-  const url = targetDate ? `${API_BASE_URL}/api/tasks/?target_date=${targetDate}` : `${API_BASE_URL}/api/tasks/`;
+  const url = targetDate ? `${API_BASE_URL}/api/tasks/?target_date=${targetDate}&limit=1000` : `${API_BASE_URL}/api/tasks/?limit=1000`;
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error("Failed to fetch tasks");
   return res.json();

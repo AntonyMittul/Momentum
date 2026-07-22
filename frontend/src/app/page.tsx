@@ -18,7 +18,7 @@ export default function Dashboard() {
       const localISOTime = (new Date(today.getTime() - tzOffset)).toISOString().split('T')[0];
       
       const [tData, nnData] = await Promise.all([
-        fetchTasks(localISOTime),
+        fetchTasks(), // Fetch all (up to 1000) and strictly filter locally
         fetchNonNegotiables(localISOTime)
       ]);
       

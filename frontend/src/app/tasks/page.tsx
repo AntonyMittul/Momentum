@@ -11,14 +11,18 @@ export default function TasksPage() {
   const loadData = async () => {
     try {
       const data = await fetchTasks();
-      // Only show tasks created today
+      
+      const today = new Date();
+      const tzOffset = today.getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(today.getTime() - tzOffset)).toISOString().split('T')[0];
+
+      // Only show tasks strictly created today in local timezone
       const todaysTasks = (data || []).filter((t: any) => {
-        if (!t.created_at) return true;
-        const taskDate = new Date(t.created_at);
-        const today = new Date();
-        return taskDate.getDate() === today.getDate() &&
-               taskDate.getMonth() === today.getMonth() &&
-               taskDate.getFullYear() === today.getFullYear();
+        if (!t.created_at) return false;
+        const tDate = new Date(t.created_at + (t.created_at.endsWith('Z') ? '' : 'Z'));
+        const tOffset = tDate.getTimezoneOffset() * 60000;
+        const tLocalISO = new Date(tDate.getTime() - tOffset).toISOString().split('T')[0];
+        return tLocalISO === localISOTime;
       });
       
       const priorityWeight: Record<string, number> = { "High": 3, "Medium": 2, "Low": 1 };
