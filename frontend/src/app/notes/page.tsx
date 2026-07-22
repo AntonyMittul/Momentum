@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { StickyNote, Plus, X, Trash2 } from "lucide-react";
-import { fetchNotes, createNote, deleteNote } from "@/lib/api";
+import { StickyNote, Plus, X, Trash2, Edit2 } from "lucide-react";
+import { fetchNotes, createNote, deleteNote, updateNote } from "@/lib/api";
 
 const pastels = [
   "bg-yellow-200 text-yellow-950", 
@@ -16,6 +16,7 @@ const pastels = [
 export default function NotesPage() {
   const [notes, setNotes] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingNote, setEditingNote] = useState<any>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
@@ -32,22 +33,41 @@ export default function NotesPage() {
     loadNotes();
   }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) return;
 
-    // Assign a random pastel color
-    const randomColor = pastels[Math.floor(Math.random() * pastels.length)];
-
     try {
-      await createNote({ title: title.trim() || null, content: content.trim(), color: randomColor });
+      if (editingNote) {
+        await updateNote(editingNote.id, { title: title.trim() || null, content: content.trim() });
+      } else {
+        const randomColor = pastels[Math.floor(Math.random() * pastels.length)];
+        await createNote({ title: title.trim() || null, content: content.trim(), color: randomColor });
+      }
+      
       setTitle("");
       setContent("");
+      setEditingNote(null);
       setIsModalOpen(false);
       loadNotes();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      alert("Failed to save note. Make sure your Render backend has finished deploying!");
     }
+  };
+
+  const handleEditClick = (note: any) => {
+    setEditingNote(note);
+    setTitle(note.title || "");
+    setContent(note.content || "");
+    setIsModalOpen(true);
+  };
+
+  const handleOpenCreate = () => {
+    setEditingNote(null);
+    setTitle("");
+    setContent("");
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id: number) => {
@@ -92,12 +112,20 @@ export default function NotesPage() {
                 ) : (
                   <div className="h-6" /> // spacer if no title
                 )}
-                <button 
-                  onClick={() => handleDelete(note.id)}
-                  className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 bg-black/10 hover:bg-black/20 rounded-full"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button 
+                    onClick={() => handleEditClick(note)}
+                    className="p-1.5 bg-black/10 hover:bg-black/20 rounded-full transition-colors"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(note.id)}
+                    className="p-1.5 bg-black/10 hover:bg-black/20 rounded-full transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
               <p className="whitespace-pre-wrap leading-relaxed font-medium opacity-90 text-sm md:text-base">
                 {note.content}
@@ -112,7 +140,7 @@ export default function NotesPage() {
 
       {/* Floating Action Button */}
       <button 
-        onClick={() => setIsModalOpen(true)}
+        onClick={handleOpenCreate}
         className="fixed bottom-24 md:bottom-8 right-6 md:right-12 w-16 h-16 bg-foreground text-background rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform duration-300 z-40"
       >
         <Plus className="w-8 h-8" />
@@ -123,13 +151,13 @@ export default function NotesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300">
             <div className="flex justify-between items-center p-6 border-b border-border">
-              <h2 className="text-xl font-bold">New Sticky Note</h2>
+              <h2 className="text-xl font-bold">{editingNote ? "Edit Note" : "New Sticky Note"}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-muted-foreground hover:text-foreground transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <form onSubmit={handleCreate} className="p-6 space-y-6">
+            <form onSubmit={handleSave} className="p-6 space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Title (Optional)</label>
                 <input

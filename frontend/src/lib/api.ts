@@ -49,6 +49,16 @@ export async function createNote(data: any) {
   return res.json();
 }
 
+export async function updateNote(id: number, data: any) {
+  const res = await fetch(`${API_BASE_URL}/api/notes/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to update note");
+  return res.json();
+}
+
 export async function deleteNote(id: number) {
   const res = await fetch(`${API_BASE_URL}/api/notes/${id}`, {
     method: "DELETE",
