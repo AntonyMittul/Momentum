@@ -107,12 +107,18 @@ export default function NotesPage() {
               <div className="absolute top-0 right-0 w-8 h-8 bg-black/10 rounded-bl-xl transition-all duration-300 group-hover:w-10 group-hover:h-10" />
               
               <div className="flex justify-between items-start mb-3">
-                {note.title ? (
-                  <h3 className="font-bold text-lg leading-tight pr-6">{note.title}</h3>
-                ) : (
-                  <div className="h-6" /> // spacer if no title
+                {note.title && (
+                  <h3 className="font-bold text-lg leading-tight break-words">{note.title}</h3>
                 )}
-                <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              </div>
+              <p className="whitespace-pre-wrap leading-relaxed font-medium opacity-90 text-sm md:text-base">
+                {note.content}
+              </p>
+              <div className="mt-6 pt-4 border-t border-black/10 flex justify-between items-center">
+                <span className="text-xs font-semibold opacity-60 tracking-wider">
+                  {new Date(note.created_at + (note.created_at.endsWith('Z') ? '' : 'Z')).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button 
                     onClick={() => handleEditClick(note)}
                     className="p-1.5 bg-black/10 hover:bg-black/20 rounded-full transition-colors"
@@ -126,12 +132,6 @@ export default function NotesPage() {
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
-              <p className="whitespace-pre-wrap leading-relaxed font-medium opacity-90 text-sm md:text-base">
-                {note.content}
-              </p>
-              <div className="mt-6 pt-4 border-t border-black/10 text-xs font-semibold opacity-60 tracking-wider">
-                {new Date(note.created_at + (note.created_at.endsWith('Z') ? '' : 'Z')).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </div>
             </div>
           ))}
