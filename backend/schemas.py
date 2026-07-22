@@ -73,3 +73,23 @@ class NonNegotiable(NonNegotiableBase):
 class NonNegotiableLogCreate(BaseModel):
     date: Optional[date] = None
     completed: bool
+
+class NoteBase(BaseModel):
+    title: Optional[str] = None
+    content: str
+    color: Optional[str] = "bg-yellow-200"
+
+class NoteCreate(NoteBase):
+    pass
+
+class NoteUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    color: Optional[str] = None
+
+class Note(NoteBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

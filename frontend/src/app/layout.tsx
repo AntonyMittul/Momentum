@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { LayoutDashboard, CheckSquare, LineChart, Palette, ShieldCheck, CalendarDays } from "lucide-react";
+import { LayoutDashboard, CheckSquare, LineChart, Palette, ShieldCheck, CalendarDays, StickyNote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -41,6 +41,9 @@ export default function RootLayout({
               <Link href="/calendar" className="flex items-center gap-3 p-2 hover:bg-muted rounded transition-colors opacity-80 hover:opacity-100">
                 <CalendarDays className="w-4 h-4" /> Calendar
               </Link>
+              <Link href="/notes" className="flex items-center gap-3 p-2 hover:bg-muted rounded transition-colors opacity-80 hover:opacity-100">
+                <StickyNote className="w-4 h-4" /> Notes
+              </Link>
               <Link href="/appearances" className="flex items-center gap-3 p-2 hover:bg-muted rounded transition-colors opacity-80 hover:opacity-100">
                 <Palette className="w-4 h-4" /> Appearances
               </Link>
@@ -68,6 +71,9 @@ export default function RootLayout({
             </Link>
             <Link href="/calendar" className="flex flex-col items-center gap-1 p-2 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors">
               <CalendarDays className="w-5 h-5" />
+            </Link>
+            <Link href="/notes" className="flex flex-col items-center gap-1 p-2 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors">
+              <StickyNote className="w-5 h-5" />
             </Link>
             <Link href="/appearances" className="flex flex-col items-center gap-1 p-2 hover:bg-muted rounded text-muted-foreground hover:text-foreground transition-colors">
               <Palette className="w-5 h-5" />

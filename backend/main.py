@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
-from routers import tasks, metrics, ai, settings, non_negotiables, reports
+from routers import tasks, metrics, ai, settings, non_negotiables, reports, notes
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -27,3 +27,4 @@ app.include_router(ai.router, prefix="/api/ai", tags=["AI"])
 app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
 app.include_router(non_negotiables.router, prefix="/api/non-negotiables", tags=["Non-Negotiables"])
 app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
+app.include_router(notes.router, prefix="/api/notes", tags=["Notes"])

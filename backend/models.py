@@ -49,3 +49,12 @@ class NonNegotiableLog(Base):
     non_negotiable_id = Column(Integer, index=True, nullable=False)
     date = Column(Date, index=True, default=date.today)
     completed = Column(Boolean, default=False)
+
+class Note(Base):
+    __tablename__ = "notes"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True, nullable=True)
+    content = Column(Text, nullable=False)
+    color = Column(String, default="bg-yellow-200")
+    created_at = Column(DateTime, default=datetime.utcnow)

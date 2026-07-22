@@ -27,6 +27,36 @@ export async function updateTask(id: number, data: any) {
   return res.json();
 }
 
+export async function generateReport(date: string) {
+  const res = await fetch(`${API_BASE_URL}/api/reports/?date=${date}`);
+  if (!res.ok) throw new Error("Failed to generate report");
+  return res.json();
+}
+
+export async function fetchNotes() {
+  const res = await fetch(`${API_BASE_URL}/api/notes/`, { cache: 'no-store' });
+  if (!res.ok) throw new Error("Failed to fetch notes");
+  return res.json();
+}
+
+export async function createNote(data: any) {
+  const res = await fetch(`${API_BASE_URL}/api/notes/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to create note");
+  return res.json();
+}
+
+export async function deleteNote(id: number) {
+  const res = await fetch(`${API_BASE_URL}/api/notes/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to delete note");
+  return res.json();
+}
+
 export async function deleteTask(id: number) {
   const res = await fetch(`${API_BASE_URL}/api/tasks/${id}`, {
     method: 'DELETE',
