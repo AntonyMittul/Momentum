@@ -23,7 +23,15 @@ export default function Dashboard() {
       ]);
       
       const priorityWeight: Record<string, number> = { "High": 3, "Medium": 2, "Low": 1 };
-      const sortedTData = (tData || []).sort((a: any, b: any) => {
+      const sortedTData = (tData || [])
+        .filter((t: any) => {
+          if (!t.created_at) return false;
+          const tDate = new Date(t.created_at + (t.created_at.endsWith('Z') ? '' : 'Z'));
+          const tOffset = tDate.getTimezoneOffset() * 60000;
+          const tLocalISO = new Date(tDate.getTime() - tOffset).toISOString().split('T')[0];
+          return tLocalISO === localISOTime;
+        })
+        .sort((a: any, b: any) => {
         const weightA = priorityWeight[a.priority] || 0;
         const weightB = priorityWeight[b.priority] || 0;
         return weightB - weightA;
