@@ -12,9 +12,14 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
+      // Create YYYY-MM-DD string in local timezone
+      const today = new Date();
+      const tzOffset = today.getTimezoneOffset() * 60000; // offset in milliseconds
+      const localISOTime = (new Date(today.getTime() - tzOffset)).toISOString().split('T')[0];
+      
       const [tData, nnData] = await Promise.all([
-        fetchTasks(),
-        fetchNonNegotiables()
+        fetchTasks(localISOTime),
+        fetchNonNegotiables(localISOTime)
       ]);
       
       const priorityWeight: Record<string, number> = { "High": 3, "Medium": 2, "Low": 1 };
@@ -46,23 +51,6 @@ export default function Dashboard() {
   useEffect(() => {
     loadData();
   }, []);
-
-  // Group all tasks by date string
-  const groupedTasks = tasks.reduce((acc: any, t) => {
-    if (!t.created_at) return acc;
-    const d = new Date(t.created_at);
-    // Sort descending later, so we keep the exact date string for sorting if needed,
-    // but a readable string for the UI
-    const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-    const sortKey = d.toISOString().split('T')[0]; // YYYY-MM-DD for reliable sorting
-    
-    if (!acc[sortKey]) acc[sortKey] = { label: dateStr, tasks: [] };
-    acc[sortKey].tasks.push(t);
-    return acc;
-  }, {});
-
-  // Sort by newest day first
-  const sortedDays = Object.keys(groupedTasks).sort((a, b) => b.localeCompare(a));
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -114,23 +102,19 @@ export default function Dashboard() {
         </section>
       )}
 
-      {/* Daily Logs (Historical View) */}
-      <section className="space-y-12">
-        {sortedDays.length === 0 ? (
-          <div className="text-gray-400 italic">No tasks recorded yet. Head over to Tasks to plan your day.</div>
+      {/* Daily Logs */}
+      <section className="space-y-6">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
+          Today's Tasks
+        </h2>
+        {tasks.length === 0 ? (
+          <div className="text-gray-400 italic">No tasks recorded yet. Click the + button to plan your day.</div>
         ) : (
-          sortedDays.map((dateKey) => (
-            <div key={dateKey}>
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
-                {groupedTasks[dateKey].label}
-              </h2>
-              <div className="space-y-3">
-                {groupedTasks[dateKey].tasks.map((t: any) => (
-                  <TaskCard key={t.id} task={t} onTaskUpdate={loadData} />
-                ))}
-              </div>
-            </div>
-          ))
+          <div className="space-y-3">
+            {tasks.map((t: any) => (
+              <TaskCard key={t.id} task={t} onTaskUpdate={loadData} />
+            ))}
+          </div>
         )}
       </section>
     </div>

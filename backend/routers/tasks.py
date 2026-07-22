@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime
+from datetime import datetime, date
 from database import get_db
 import models, schemas
+from sqlalchemy import cast, Date
 
 router = APIRouter()
 
@@ -16,9 +17,11 @@ def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
     return db_task
 
 @router.get("/", response_model=List[schemas.Task])
-def read_tasks(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    tasks = db.query(models.Task).offset(skip).limit(limit).all()
-    return tasks
+def read_tasks(skip: int = 0, limit: int = 100, target_date: date = None, db: Session = Depends(get_db)):
+    query = db.query(models.Task)
+    if target_date:
+        query = query.filter(cast(models.Task.created_at, Date) == target_date)
+    return query.offset(skip).limit(limit).all()
 
 @router.put("/{task_id}", response_model=schemas.Task)
 def update_task(task_id: int, task: schemas.TaskUpdate, db: Session = Depends(get_db)):

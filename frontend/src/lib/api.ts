@@ -1,7 +1,8 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export async function fetchTasks() {
-  const res = await fetch(`${API_BASE_URL}/api/tasks/`, { cache: 'no-store' });
+export async function fetchTasks(targetDate?: string) {
+  const url = targetDate ? `${API_BASE_URL}/api/tasks/?target_date=${targetDate}` : `${API_BASE_URL}/api/tasks/`;
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error("Failed to fetch tasks");
   return res.json();
 }
@@ -60,8 +61,9 @@ export async function calculateMetrics() {
   return res.json();
 }
 
-export async function fetchNonNegotiables() {
-  const res = await fetch(`${API_BASE_URL}/api/non-negotiables/`, { cache: 'no-store' });
+export async function fetchNonNegotiables(targetDate?: string) {
+  const url = targetDate ? `${API_BASE_URL}/api/non-negotiables/?target_date=${targetDate}` : `${API_BASE_URL}/api/non-negotiables/`;
+  const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error("Failed to fetch non-negotiables");
   return res.json();
 }
