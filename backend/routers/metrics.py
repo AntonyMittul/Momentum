@@ -32,35 +32,20 @@ def calculate_metrics_for_today(db: Session = Depends(get_db)):
     
     tasks = db.query(models.Task).all()
     
-    tasks_today = [t for t in tasks if (t.created_at.date() == today or (t.completed_at and t.completed_at.date() == today) or (t.deadline and t.deadline.date() == today) or t.status != "Completed")]
+    # To perfectly align with the dashboard, "tasks today" are strictly the tasks created today.
+    # The dashboard hides old pending tasks, so we shouldn't penalize the user for them.
+    tasks_today = [t for t in tasks if t.created_at and t.created_at.date() == today]
     
-    completed_today = [t for t in tasks_today if t.status == "Completed" and t.completed_at and t.completed_at.date() == today]
-    high_priority_completed = [t for t in completed_today if t.priority == "High"]
+    completed_today = [t for t in tasks_today if t.status == "Completed"]
     
-    actual_created_today = [t for t in tasks if t.created_at and t.created_at.date() == today]
-    
-    metrics.tasks_created = len(actual_created_today)
+    metrics.tasks_created = len(tasks_today)
     metrics.tasks_completed = len(completed_today)
     metrics.completion_percentage = (len(completed_today) / len(tasks_today) * 100) if len(tasks_today) > 0 else 0
     
-    # Consistency Score Formula
-    # 40% Task Completion Rate
-    # 30% High Priority Tasks Completed
-    # 20% Task Difficulty (using consistency_weight)
-    # 10% Streak Bonus
-    
-    comp_rate_score = metrics.completion_percentage * 0.4
-    high_pri_score = min((len(high_priority_completed) / max(len([t for t in tasks_today if t.priority == "High"]), 1)) * 100, 100) * 0.3
-    
-    # Simple difficulty score
-    difficulty_score = min(sum([t.consistency_weight for t in completed_today]) * 10, 100) * 0.2
-    
-    # Basic streak logic: if completion > 50% increase streak
-    # For now, just placeholder streak
-    current_streak = metrics.streak or 0
-    streak_score = min(current_streak * 5, 100) * 0.1
-    
-    metrics.consistency_score = round(comp_rate_score + high_pri_score + difficulty_score + streak_score, 1)
+    # Simplified Consistency Score: 
+    # Directly tied to completion percentage so it feels intuitive.
+    # A perfect day of completing all tasks equals a score of 100.
+    metrics.consistency_score = round(metrics.completion_percentage, 1)
     
     db.commit()
     db.refresh(metrics)
