@@ -37,7 +37,9 @@ def calculate_metrics_for_today(db: Session = Depends(get_db)):
     completed_today = [t for t in tasks_today if t.status == "Completed" and t.completed_at and t.completed_at.date() == today]
     high_priority_completed = [t for t in completed_today if t.priority == "High"]
     
-    metrics.tasks_created = len(tasks_today)
+    actual_created_today = [t for t in tasks if t.created_at.date() == today]
+    
+    metrics.tasks_created = len(actual_created_today)
     metrics.tasks_completed = len(completed_today)
     metrics.completion_percentage = (len(completed_today) / len(tasks_today) * 100) if len(tasks_today) > 0 else 0
     
