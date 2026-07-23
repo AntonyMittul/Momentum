@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMetrics } from "@/lib/api";
+import { getMetrics, calculateMetrics } from "@/lib/api";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { format, subDays, parseISO } from "date-fns";
 
@@ -15,6 +15,7 @@ export default function InsightsPage() {
 
   useEffect(() => {
     async function load() {
+      await calculateMetrics(); // Ensure metrics are fully up to date for today before fetching
       const data = await getMetrics();
       if (data) {
         // Reverse so chronological order for graph
