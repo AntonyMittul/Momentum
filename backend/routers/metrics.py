@@ -1,9 +1,13 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import date
+from datetime import date, timedelta, datetime
 from database import get_db
 import models, schemas
+from pydantic import BaseModel
+
+class CalculateRequest(BaseModel):
+    tz_offset: int = 0
 
 router = APIRouter()
 
@@ -13,8 +17,14 @@ def read_metrics(skip: int = 0, limit: int = 30, db: Session = Depends(get_db)):
     return metrics
 
 @router.post("/calculate")
-def calculate_metrics_for_today(db: Session = Depends(get_db)):
-    today = date.today()
+def calculate_metrics_for_today(req: CalculateRequest, db: Session = Depends(get_db)):
+    # Calculate today's local date based on tz_offset
+    # tz_offset is the JS getTimezoneOffset() (minutes to add to local to get UTC).
+    # So local_time = utc_time - tz_offset
+    now_utc = datetime.utcnow()
+    local_now = now_utc - timedelta(minutes=req.tz_offset)
+    today = local_now.date()
+    
     # Find today's metrics or create
     metrics = db.query(models.DailyMetrics).filter(models.DailyMetrics.date == today).first()
     if not metrics:
@@ -32,9 +42,13 @@ def calculate_metrics_for_today(db: Session = Depends(get_db)):
     
     tasks = db.query(models.Task).all()
     
-    # To perfectly align with the dashboard, "tasks today" are strictly the tasks created today.
-    # The dashboard hides old pending tasks, so we shouldn't penalize the user for them.
-    tasks_today = [t for t in tasks if t.created_at and t.created_at.date() == today]
+    # To perfectly align with the dashboard, "tasks today" are strictly the tasks created today in local time.
+    tasks_today = []
+    for t in tasks:
+        if t.created_at:
+            t_local = t.created_at - timedelta(minutes=req.tz_offset)
+            if t_local.date() == today:
+                tasks_today.append(t)
     
     completed_today = [t for t in tasks_today if t.status == "Completed"]
     
