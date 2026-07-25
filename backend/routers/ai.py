@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
-import google.generativeai as genai
+from google import genai
 import os
 from database import get_db
 import models, schemas
@@ -22,8 +22,7 @@ def get_morning_coach(db: Session = Depends(get_db)):
     if not api_key:
         return schemas.AIMessage(date=today, generated_message="Welcome back. Let's make today count by focusing on consistency.")
         
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-3.1-flash-lite')
+    client = genai.Client(api_key=api_key)
     
     # Get yesterday's metrics
     yesterday = db.query(models.DailyMetrics).order_by(models.DailyMetrics.date.desc()).first()
@@ -44,7 +43,10 @@ def get_morning_coach(db: Session = Depends(get_db)):
     """
     
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt
+        )
         msg_text = response.text.strip().strip('"').strip("'")
     except Exception as e:
         msg_text = "Let's build on yesterday's momentum. Focus on completing your highest priority task first."

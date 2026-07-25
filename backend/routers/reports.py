@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from datetime import date, timedelta
-import google.generativeai as genai
+from google import genai
 import os
 from database import get_db
 import models
@@ -59,8 +59,7 @@ def get_weekly_report(db: Session = Depends(get_db)):
         report_text = "API Key not found. Please set GEMINI_API_KEY in the environment to generate AI reports."
     else:
         try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-3.1-flash-lite')
+            client = genai.Client(api_key=api_key)
             prompt = f"""
             You are a calm, minimalist productivity coach for a single user.
             Write a supportive and reflective weekly review report.
@@ -83,7 +82,10 @@ def get_weekly_report(db: Session = Depends(get_db)):
             Output ONLY the report text. Do not use asterisks or markdown formatting as it will be rendered in a plain text PDF. Just use plain text with line breaks.
             """
             
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt
+            )
             report_text = response.text.strip()
         except Exception as e:
             report_text = f"An error occurred generating the AI report: {str(e)}"

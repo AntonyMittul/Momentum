@@ -3,7 +3,7 @@ uvicorn
 sqlalchemy
 alembic
 python-dotenv
-google-generativeai
+google-genai
 pydantic
 fpdf2
 psycopg2-binary
