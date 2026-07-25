@@ -16,10 +16,9 @@ export default function TasksPage() {
       const tzOffset = today.getTimezoneOffset() * 60000;
       const localISOTime = (new Date(today.getTime() - tzOffset)).toISOString().split('T')[0];
 
-      // Show tasks strictly completed today, but ALWAYS show pending tasks
+      // Only show tasks strictly created today in local timezone
       const todaysTasks = (data || []).filter((t: any) => {
         if (!t.created_at) return false;
-        if (t.status !== "Completed") return true; // Show all pending tasks
         
         const tDate = new Date(t.created_at + (t.created_at.endsWith('Z') ? '' : 'Z'));
         const tOffset = tDate.getTimezoneOffset() * 60000;

@@ -26,8 +26,6 @@ export default function Dashboard() {
       const sortedTData = (tData || [])
         .filter((t: any) => {
           if (!t.created_at) return false;
-          // Always show pending tasks so they don't disappear at midnight
-          if (t.status !== "Completed") return true;
           
           const tDate = new Date(t.created_at + (t.created_at.endsWith('Z') ? '' : 'Z'));
           const tOffset = tDate.getTimezoneOffset() * 60000;
