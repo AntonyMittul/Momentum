@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchTasks, calculateMetrics, fetchNonNegotiables, toggleNonNegotiable } from "@/lib/api";
 import TaskCard from "@/components/TaskCard";
-import CreateTaskModal from "@/components/CreateTaskModal";
+
 import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Dashboard() {
@@ -127,10 +127,6 @@ export default function Dashboard() {
             ))}
           </div>
         )}
-      </section>
-
-      {/* Floating Action Button */}
-      <CreateTaskModal onTaskCreated={loadData} />
     </div>
   );
 }

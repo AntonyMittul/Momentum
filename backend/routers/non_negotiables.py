@@ -31,10 +31,10 @@ def get_non_negotiables(target_date: date = None, db: Session = Depends(get_db))
         data = {
             "id": item.id,
             "title": item.title,
-            "duration_days": item.duration_days,
+            "duration_days": item.duration_days or 30,
             "created_at": item.created_at,
             "completed_today": log.completed if log else False,
-            "remaining_days": max(0, item.duration_days - completed_count)
+            "remaining_days": max(0, (item.duration_days or 30) - completed_count)
         }
         results.append(data)
         
@@ -50,10 +50,10 @@ def create_non_negotiable(nn: schemas.NonNegotiableCreate, db: Session = Depends
     data = {
         "id": db_item.id,
         "title": db_item.title,
-        "duration_days": db_item.duration_days,
+        "duration_days": db_item.duration_days or 30,
         "created_at": db_item.created_at,
         "completed_today": False,
-        "remaining_days": db_item.duration_days
+        "remaining_days": db_item.duration_days or 30
     }
     return data
 
@@ -104,9 +104,9 @@ def toggle_non_negotiable(nn_id: int, log_data: schemas.NonNegotiableLogCreate, 
     data = {
         "id": db_item.id,
         "title": db_item.title,
-        "duration_days": db_item.duration_days,
+        "duration_days": db_item.duration_days or 30,
         "created_at": db_item.created_at,
         "completed_today": log_data.completed,
-        "remaining_days": max(0, db_item.duration_days - completed_count)
+        "remaining_days": max(0, (db_item.duration_days or 30) - completed_count)
     }
     return data
