@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMetrics, calculateMetrics } from "@/lib/api";
+import { getMetrics, calculateMetrics, API_BASE_URL } from "@/lib/api";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { format, subDays, parseISO } from "date-fns";
 
@@ -10,7 +10,7 @@ export default function InsightsPage() {
   const isSunday = new Date().getDay() === 0;
 
   const handleDownloadReport = () => {
-    window.open("http://localhost:8000/api/reports/weekly", "_blank");
+    window.open(`${API_BASE_URL}/api/reports/weekly`, "_blank");
   };
 
   useEffect(() => {
