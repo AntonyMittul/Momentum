@@ -3,7 +3,7 @@
 import { useTheme, Theme } from "@/components/ThemeProvider";
 
 export default function AppearancesPage() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, customColor, setCustomColor } = useTheme();
 
   const themes: { id: Theme, name: string, description: string, previewClass: string }[] = [
     {
@@ -49,6 +49,41 @@ export default function AppearancesPage() {
             <p className="text-sm opacity-60 mt-1">{t.description}</p>
           </div>
         ))}
+        
+        {/* Custom Theme Card */}
+        <div 
+          onClick={() => setTheme("theme-custom")}
+          className={`border p-6 cursor-pointer transition-all duration-300 bg-card flex flex-col ${
+            theme === "theme-custom" ? "ring-2 ring-foreground border-transparent" : "border-border hover:border-foreground/50"
+          }`}
+        >
+          <div 
+            className="w-full h-32 mb-4 border flex items-center justify-center font-medium shadow-sm transition-colors duration-500 relative"
+            style={{ backgroundColor: customColor, borderColor: 'var(--theme-border)', color: 'var(--theme-fg)' }}
+          >
+            Aa
+            <input 
+              type="color" 
+              value={customColor}
+              onChange={(e) => {
+                setCustomColor(e.target.value);
+                setTheme("theme-custom");
+              }}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              title="Choose your custom background color"
+            />
+          </div>
+          <h3 className="font-semibold text-lg flex items-center gap-2">
+            Custom
+            <div 
+              className="w-4 h-4 rounded-full border border-border" 
+              style={{ backgroundColor: customColor }}
+            />
+          </h3>
+          <p className="text-sm opacity-60 mt-1 flex-1">
+            Pick any background color. Text color adapts automatically.
+          </p>
+        </div>
       </div>
     </div>
   );
