@@ -10,7 +10,7 @@ export default function InsightsPage() {
   const isSunday = new Date().getDay() === 0;
 
   const handleDownloadReport = () => {
-    window.open(`${API_BASE_URL}/api/reports/weekly`, "_blank");
+    window.open(`${API_BASE_URL}/api/reports/weekly?t=${Date.now()}`, "_blank");
   };
 
   useEffect(() => {
