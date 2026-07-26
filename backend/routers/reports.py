@@ -83,7 +83,7 @@ def get_weekly_report(db: Session = Depends(get_db)):
             """
             
             response = client.models.generate_content(
-                model='gemini-2.5-flash',
+                model='gemini-3.1-flash-lite',
                 contents=prompt
             )
             report_text = response.text.strip()

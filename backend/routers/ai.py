@@ -44,7 +44,7 @@ def get_morning_coach(db: Session = Depends(get_db)):
     
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite',
             contents=prompt
         )
         msg_text = response.text.strip().strip('"').strip("'")
