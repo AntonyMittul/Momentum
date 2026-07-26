@@ -37,6 +37,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [customColor, setCustomColorState] = useState<string>("#5c6ac4");
   const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
     setMounted(true);
     const savedTheme = localStorage.getItem("app-theme") as Theme;
     const savedColor = localStorage.getItem("app-custom-color");
