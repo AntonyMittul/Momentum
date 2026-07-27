@@ -5,6 +5,7 @@ import { fetchTasks, calculateMetrics, fetchNonNegotiables, toggleNonNegotiable 
 import TaskCard from "@/components/TaskCard";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { ShieldCheck } from "lucide-react";
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -96,9 +97,10 @@ export default function Dashboard() {
                     className="border-border rounded-sm data-[state=checked]:bg-foreground data-[state=checked]:text-background transition-all duration-300"
                   />
                 </div>
-                <div className="flex-1 flex justify-between items-center">
-                  <div>
-                    <h3 className={`font-medium ${nn.completed_today ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                <div className="flex-1 flex justify-between items-center min-w-0 pr-4">
+                  <div className="flex items-center min-w-0">
+                    <ShieldCheck className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                    <h3 className={`font-medium truncate ${nn.completed_today ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                       {nn.title}
                     </h3>
                   </div>

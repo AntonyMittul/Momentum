@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Checkbox } from "./ui/checkbox";
 import { useState } from "react";
 import { updateTask, deleteTask } from "@/lib/api";
-import { Trash2 } from "lucide-react";
+import { Trash2, Brain, Folder, Briefcase, Dumbbell, BookOpen, Crown, User, List } from "lucide-react";
 import EditTaskModal from "./EditTaskModal";
 
 export default function TaskCard({ task, onTaskUpdate }: { task: any, onTaskUpdate?: () => void }) {
@@ -41,6 +41,20 @@ export default function TaskCard({ task, onTaskUpdate }: { task: any, onTaskUpda
     }
   };
 
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "AI & Machine Learning": return <Brain className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+      case "Projects": return <Folder className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+      case "Career": return <Briefcase className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+      case "Fitness": return <Dumbbell className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+      case "Reading": return <BookOpen className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+      case "Chess": return <Crown className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+      case "Personal": return <User className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+      case "Other":
+      default: return <List className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -55,11 +69,14 @@ export default function TaskCard({ task, onTaskUpdate }: { task: any, onTaskUpda
           className="border-border rounded-sm data-[state=checked]:bg-foreground data-[state=checked]:text-background transition-all duration-300"
         />
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between">
-          <h3 className={`font-medium ${completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
-            {task.title}
-          </h3>
+          <div className="flex items-center flex-1 min-w-0 pr-4">
+            {getCategoryIcon(task.category)}
+            <h3 className={`font-medium truncate ${completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+              {task.title}
+            </h3>
+          </div>
           <span className="text-xs uppercase tracking-wider font-semibold text-gray-400">
             {task.estimated_duration ? `${task.estimated_duration} MINS` : ''}
           </span>

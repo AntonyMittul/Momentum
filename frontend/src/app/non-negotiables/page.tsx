@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchNonNegotiables, createNonNegotiable, deleteNonNegotiable, toggleNonNegotiable } from "@/lib/api";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, ShieldCheck } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export default function NonNegotiablesPage() {
@@ -106,9 +106,10 @@ export default function NonNegotiablesPage() {
                     className="border-border rounded-sm data-[state=checked]:bg-foreground data-[state=checked]:text-background transition-all duration-300"
                   />
                 </div>
-                <div className="flex-1 flex justify-between items-center">
-                  <div>
-                    <h3 className={`font-medium ${item.completed_today ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                <div className="flex-1 flex justify-between items-center min-w-0 pr-4">
+                  <div className="flex items-center min-w-0">
+                    <ShieldCheck className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                    <h3 className={`font-medium truncate ${item.completed_today ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                       {item.title}
                     </h3>
                   </div>
