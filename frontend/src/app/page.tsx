@@ -5,7 +5,18 @@ import { fetchTasks, calculateMetrics, fetchNonNegotiables, toggleNonNegotiable 
 import TaskCard from "@/components/TaskCard";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Droplets, Sun, Pizza, Activity, Moon, BookOpen } from "lucide-react";
+
+const getNNIcon = (title: string) => {
+  const lower = title.toLowerCase();
+  if (lower.includes('water') || lower.includes('drink')) return <Droplets className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+  if (lower.includes('sun') || lower.includes('light')) return <Sun className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+  if (lower.includes('junk') || lower.includes('sugar') || lower.includes('oil') || lower.includes('diet')) return <Pizza className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+  if (lower.includes('physical') || lower.includes('activity') || lower.includes('exercise') || lower.includes('workout') || lower.includes('gym') || lower.includes('run')) return <Activity className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+  if (lower.includes('sleep') || lower.includes('rest') || lower.includes('bed')) return <Moon className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+  if (lower.includes('read') || lower.includes('book')) return <BookOpen className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+  return <ShieldCheck className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
+};
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -99,7 +110,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex-1 flex justify-between items-center min-w-0 pr-4">
                   <div className="flex items-center min-w-0">
-                    <ShieldCheck className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />
+                    {getNNIcon(nn.title)}
                     <h3 className={`font-medium truncate ${nn.completed_today ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                       {nn.title}
                     </h3>
