@@ -50,7 +50,7 @@ export default function RootLayout({
             </nav>
           </aside>
           <main className="flex-1 overflow-auto bg-background transition-colors duration-500 pb-20 md:pb-0">
-            <div className="max-w-4xl mx-auto p-6 md:p-12">
+            <div className="max-w-6xl mx-auto p-6 md:p-12">
               {children}
             </div>
           </main>

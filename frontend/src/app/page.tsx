@@ -79,8 +79,9 @@ export default function Dashboard() {
 
       {/* Header Section (Kept without changes below, removed mission) */}
 
-      {/* Non-Negotiables */}
-      {nonNegotiables.length > 0 && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        {/* Non-Negotiables */}
+        {nonNegotiables.length > 0 && (
         <section>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
             Non-Negotiables
@@ -125,7 +126,8 @@ export default function Dashboard() {
             ))}
           </div>
         )}
-      </section>
+        </section>
+      </div>
     </div>
   );
 }
