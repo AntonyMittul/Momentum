@@ -14,7 +14,7 @@ class PDF(FPDF):
     def header(self):
         self.set_font('helvetica', 'B', 15)
         self.cell(0, 10, 'Momentum - Weekly Productivity Report', align='C', new_x="LMARGIN", new_y="NEXT")
-        self.ln(10)
+        self.ln(5)
 
     def footer(self):
         self.set_y(-15)
@@ -74,12 +74,17 @@ def get_weekly_report(db: Session = Depends(get_db)):
             {chr(10).join(nn_summary)}
             
             Please write a well-structured report with the following sections (Keep it under 350 words):
-            1. Weekly Reflection (A short paragraph summarizing the week's effort)
-            2. Task Highlights (A brief note on task completion)
-            3. Habit Consistency (A brief review of the non-negotiables)
-            4. Looking Ahead (A motivating closing thought for next week)
+            **Weekly Reflection**
+            **Task Highlights**
+            **Habit Consistency**
+            **Looking Ahead**
             
-            Output ONLY the report text. Do not use asterisks or markdown formatting as it will be rendered in a plain text PDF. Just use plain text with line breaks.
+            FORMATTING RULES:
+            - Do not include the date or any title heading at the beginning. Start directly with the first section heading.
+            - Ensure there is an empty line between each heading and its content.
+            - Use bullet points instead of paragraphs for the content inside each section to make it easy to read.
+            - Bold all the important metrics and numbers in the text (e.g., **13 out of 23 tasks**, **6 days**).
+            - Use standard markdown bold formatting: **Text**
             """
             
             response = client.models.generate_content(
@@ -95,12 +100,10 @@ def get_weekly_report(db: Session = Depends(get_db)):
     pdf.add_page()
     pdf.set_font("helvetica", size=12)
     
-    pdf.set_font("helvetica", style='B', size=12)
-    pdf.cell(0, 10, f"Week of {start_of_week.strftime('%B %d, %Y')} - {end_of_week.strftime('%B %d, %Y')}", new_x="LMARGIN", new_y="NEXT", align='L')
-    pdf.ln(5)
-    
     pdf.set_font("helvetica", size=11)
-    pdf.multi_cell(0, 7, report_text)
+    
+    # fpdf2 supports basic markdown with markdown=True
+    pdf.multi_cell(0, 7, report_text, markdown=True)
     
     # Output returns bytearray in fpdf2
     pdf_bytes = pdf.output()
