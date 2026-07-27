@@ -80,13 +80,30 @@ export default function Dashboard() {
     return "Good Evening.";
   };
 
+  const getFormattedDate = () => {
+    const date = new Date();
+    const month = date.toLocaleString('default', { month: 'long' });
+    const day = date.getDate();
+    const year = date.getFullYear();
+    
+    let suffix = 'th';
+    if (day % 10 === 1 && day !== 11) suffix = 'st';
+    if (day % 10 === 2 && day !== 12) suffix = 'nd';
+    if (day % 10 === 3 && day !== 13) suffix = 'rd';
+    
+    return `${month} ${day}${suffix}, ${year}`;
+  };
+
   return (
     <div className="space-y-16 pb-24">
       {/* Header Section */}
-      <section className="space-y-4">
+      <section className="space-y-2">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
           {getGreeting()}
         </h1>
+        <p className="text-muted-foreground text-lg font-medium tracking-wide">
+          {getFormattedDate()}
+        </p>
       </section>
 
       {/* Header Section (Kept without changes below, removed mission) */}
