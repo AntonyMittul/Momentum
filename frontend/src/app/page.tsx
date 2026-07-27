@@ -69,16 +69,7 @@ export default function Dashboard() {
     }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning.";
-    if (hour < 18) return "Good Afternoon.";
-    return "Good Evening.";
-  };
+  const [currentDate, setCurrentDate] = useState("");
 
   const getFormattedDate = () => {
     const date = new Date();
@@ -94,6 +85,25 @@ export default function Dashboard() {
     return `${month} ${day}${suffix}, ${year}`;
   };
 
+  useEffect(() => {
+    loadData();
+    setCurrentDate(getFormattedDate());
+    
+    // Update the date at midnight if the user leaves the tab open
+    const interval = setInterval(() => {
+      setCurrentDate(getFormattedDate());
+    }, 60000 * 60); // Check every hour
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning.";
+    if (hour < 18) return "Good Afternoon.";
+    return "Good Evening.";
+  };
+
   return (
     <div className="space-y-16 pb-24">
       {/* Header Section */}
@@ -102,7 +112,7 @@ export default function Dashboard() {
           {getGreeting()}
         </h1>
         <p className="text-muted-foreground text-lg font-medium tracking-wide">
-          {getFormattedDate()}
+          {currentDate}
         </p>
       </section>
 
