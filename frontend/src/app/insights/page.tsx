@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMetrics, calculateMetrics, API_BASE_URL } from "@/lib/api";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { getMetrics, calculateMetrics, API_BASE_URL, fetchNonNegotiables } from "@/lib/api";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { format, subDays, parseISO } from "date-fns";
 
 export default function InsightsPage() {
   const [metrics, setMetrics] = useState<any[]>([]);
+  const [nonNegotiables, setNonNegotiables] = useState<any[]>([]);
   const isSunday = new Date().getDay() === 0;
 
   const handleDownloadReport = () => {
@@ -20,6 +21,17 @@ export default function InsightsPage() {
       if (data) {
         // Reverse so chronological order for graph
         setMetrics(data.reverse());
+      }
+      
+      const tzOffset = new Date().getTimezoneOffset() * 60000;
+      const localISOTime = (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
+      const nnData = await fetchNonNegotiables(localISOTime);
+      if (nnData) {
+        const formattedNN = nnData.map((nn: any) => ({
+          name: nn.title,
+          completedDays: (nn.duration_days || 30) - nn.remaining_days,
+        }));
+        setNonNegotiables(formattedNN);
       }
     }
     load();
@@ -120,6 +132,46 @@ export default function InsightsPage() {
           )}
         </div>
       </section>
+
+      {/* Section 1.5: Non-Negotiables Bar Chart */}
+      {nonNegotiables.length > 0 && (
+        <section>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-6">
+            Non-Negotiables Progress
+          </h2>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={nonNegotiables} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fill: '#888' }}
+                  dy={10}
+                />
+                <YAxis 
+                  allowDecimals={false}
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 12, fill: '#888' }}
+                  dx={-10}
+                />
+                <Tooltip 
+                  cursor={{ fill: 'var(--muted)' }} 
+                  contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+                />
+                <Bar 
+                  dataKey="completedDays" 
+                  name="Days Followed"
+                  fill="currentColor" 
+                  radius={[4, 4, 0, 0]}
+                  maxBarSize={60}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+      )}
 
       {/* Section 2: Streak & Contribution */}
       <section>
