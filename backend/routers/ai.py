@@ -75,3 +75,100 @@ def get_todays_mission(db: Session = Depends(get_db)):
             "recommendation": "Recommended to start early."
         }
     }
+
+@router.get("/chat/history", response_model=List[schemas.ChatMessage])
+def get_chat_history(db: Session = Depends(get_db)):
+    # Retrieve all chat history ordered by creation time
+    messages = db.query(models.ChatHistory).order_by(models.ChatHistory.created_at.asc()).all()
+    return messages
+
+@router.post("/chat", response_model=schemas.ChatMessage)
+def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_db)):
+    # 1. Save user's message
+    user_msg = models.ChatHistory(role="user", message=req.message)
+    db.add(user_msg)
+    db.commit()
+    db.refresh(user_msg)
+
+    # 2. Gather context
+    today = date.today()
+    tasks_today = db.query(models.Task).all()
+    pending_tasks = [t for t in tasks_today if t.status == 'Pending']
+    completed_tasks = [t for t in tasks_today if t.status == 'Completed']
+    
+    non_negotiables = db.query(models.NonNegotiable).all()
+    nn_logs = db.query(models.NonNegotiableLog).filter(models.NonNegotiableLog.date == today).all()
+    
+    nn_status = []
+    for nn in non_negotiables:
+        log = next((l for l in nn_logs if l.non_negotiable_id == nn.id), None)
+        status = "Completed" if log and log.completed else "Pending"
+        nn_status.append(f"{nn.title}: {status}")
+
+    metrics = db.query(models.DailyMetrics).order_by(models.DailyMetrics.date.desc()).first()
+    metrics_summary = f"Consistency Score: {metrics.consistency_score if metrics else 0}/100, Current Streak: {metrics.streak if metrics else 0} days."
+
+    tasks_summary = "Pending Tasks:\n" + "\n".join([f"- {t.title} ({t.priority})" for t in pending_tasks])
+    tasks_summary += "\nCompleted Tasks:\n" + "\n".join([f"- {t.title}" for t in completed_tasks])
+    
+    context = f"""
+    Current Context for Today ({today}):
+    {metrics_summary}
+
+    Non-Negotiable Habits:
+    {chr(10).join(nn_status)}
+
+    {tasks_summary}
+    """
+
+    # 3. Retrieve recent history for Gemini context (limit to last 20 messages to save tokens)
+    history = db.query(models.ChatHistory).order_by(models.ChatHistory.created_at.asc()).all()[-20:]
+    
+    # 4. Construct Prompt
+    system_prompt = f"""
+    You are an expert ADHD specialist and a supportive, positive friend to the user.
+    You must use very informal, casual English (no textbook or rigid formatting).
+    Your goal is to help the user manage their ADHD, stay on top of their tasks, and offer highly practical, bite-sized recommendations.
+    Always treat them like a friend. Be empathetic, encouraging, and understanding of executive dysfunction.
+    
+    Here is their live data for today from their Momentum app:
+    {context}
+    
+    Please respond directly to the user's latest message based on this context. Keep your response concise (under 150 words usually) unless they ask for a detailed plan.
+    """
+
+    contents = [
+        {"role": "user", "parts": [{"text": system_prompt}]}
+    ]
+
+    # Map our history to Gemini's expected format (user/model)
+    for msg in history:
+        gemini_role = "user" if msg.role == "user" else "model"
+        contents.append({"role": gemini_role, "parts": [{"text": msg.message}]})
+        
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        err_msg = models.ChatHistory(role="assistant", message="Hey! I need my Gemini API key to chat with you. Please add it to the backend environment variables.")
+        db.add(err_msg)
+        db.commit()
+        db.refresh(err_msg)
+        return err_msg
+        
+    try:
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model='gemini-3.1-flash-lite',
+            contents=contents
+        )
+        ai_response_text = response.text.strip()
+    except Exception as e:
+        ai_response_text = "I'm having a little trouble connecting right now. Can we try again in a sec?"
+        print("Gemini Error:", e)
+
+    # 5. Save assistant's response
+    assistant_msg = models.ChatHistory(role="assistant", message=ai_response_text)
+    db.add(assistant_msg)
+    db.commit()
+    db.refresh(assistant_msg)
+
+    return assistant_msg

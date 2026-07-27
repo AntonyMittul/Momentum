@@ -93,3 +93,15 @@ class Note(NoteBase):
 
     class Config:
         from_attributes = True
+
+class ChatMessageCreate(BaseModel):
+    message: str
+
+class ChatMessage(BaseModel):
+    id: int
+    role: str
+    message: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

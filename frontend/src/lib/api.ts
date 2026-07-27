@@ -138,3 +138,19 @@ export async function toggleNonNegotiable(id: number, completed: boolean) {
   if (!res.ok) throw new Error("Failed to toggle non-negotiable");
   return res.json();
 }
+
+export async function fetchChatHistory() {
+  const res = await fetch(`${API_BASE_URL}/api/ai/chat/history`, { cache: 'no-store' });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function sendChatMessage(message: string) {
+  const res = await fetch(`${API_BASE_URL}/api/ai/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message }),
+  });
+  if (!res.ok) throw new Error("Failed to send message");
+  return res.json();
+}

@@ -58,3 +58,11 @@ class Note(Base):
     content = Column(Text, nullable=False)
     color = Column(String, default="bg-yellow-200")
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class ChatHistory(Base):
+    __tablename__ = "chat_history"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    role = Column(String, nullable=False) # 'user' or 'assistant'
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
