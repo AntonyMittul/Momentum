@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={cn("h-full", "antialiased", inter.variable, "font-sans", geist.variable)}>
-      <body className="min-h-[100dvh] flex flex-col md:flex-row bg-background text-foreground font-sans transition-colors duration-500">
+      <body className="h-[100dvh] overflow-hidden flex flex-col md:flex-row bg-background text-foreground font-sans transition-colors duration-500">
         <ThemeProvider>
           <aside className="w-64 border-r border-border flex flex-col p-6 hidden md:flex">
             <div className="mb-12 font-bold text-xl tracking-tight">Momentum</div>
