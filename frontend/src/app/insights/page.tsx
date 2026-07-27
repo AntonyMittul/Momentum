@@ -157,8 +157,19 @@ export default function InsightsPage() {
                   dx={-10}
                 />
                 <Tooltip 
+                  content={({ active, payload, label }: any) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-card border border-border p-3 text-sm text-foreground shadow-md transition-colors duration-500">
+                          <p className="font-bold mb-1">{data.name}</p>
+                          <p>Days Followed: <span className="font-semibold">{data.completedDays}</span></p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
                   cursor={{ fill: 'var(--muted)' }} 
-                  contentStyle={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
                 />
                 <Bar 
                   dataKey="completedDays" 
