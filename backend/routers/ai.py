@@ -121,7 +121,7 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     {tasks_summary}
     """
 
-    # 3. Retrieve recent history for Gemini context (limit to last 20 messages to save tokens)
+    # 3. Retrieve recent history for context
     history = db.query(models.ChatHistory).order_by(models.ChatHistory.created_at.asc()).all()[-20:]
     
     # 4. Construct Prompt
@@ -133,19 +133,15 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     
     Here is their live data for today from their Momentum app:
     {context}
-    
-    Please respond directly to the user's latest message based on this context. Keep your response concise (under 150 words usually) unless they ask for a detailed plan.
     """
 
-    contents = [
-        {"role": "user", "parts": [{"text": system_prompt}]}
-    ]
-
-    # Map our history to Gemini's expected format (user/model)
+    chat_transcript = ""
     for msg in history:
-        gemini_role = "user" if msg.role == "user" else "model"
-        contents.append({"role": gemini_role, "parts": [{"text": msg.message}]})
-        
+        prefix = "User: " if msg.role == "user" else "Assistant: "
+        chat_transcript += f"{prefix}{msg.message}\n"
+
+    final_prompt = f"{system_prompt}\n\nChat Transcript:\n{chat_transcript}\n\nRespond to the User's latest message as the Assistant. Keep it concise."
+
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         err_msg = models.ChatHistory(role="assistant", message="Hey! I need my Gemini API key to chat with you. Please add it to the backend environment variables.")
@@ -158,7 +154,7 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
         client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
             model='gemini-3.1-flash-lite',
-            contents=contents
+            contents=final_prompt
         )
         ai_response_text = response.text.strip()
     except Exception as e:
