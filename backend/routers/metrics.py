@@ -61,6 +61,29 @@ def calculate_metrics_for_today(req: CalculateRequest, db: Session = Depends(get
     # A perfect day of completing all tasks equals a score of 100.
     metrics.consistency_score = round(metrics.completion_percentage, 1)
     
+    # Recalculate streaks historically to ensure perfect accuracy
+    all_metrics = db.query(models.DailyMetrics).filter(models.DailyMetrics.date <= today).order_by(models.DailyMetrics.date.asc()).all()
+    
+    current_streak = 0
+    longest_streak = 0
+    prev_date = None
+    
+    for m in all_metrics:
+        # If there is a gap of more than 1 day between recorded metrics, the streak is broken
+        if prev_date is not None and (m.date - prev_date).days > 1:
+            current_streak = 0
+            
+        if m.consistency_score >= 100:
+            current_streak += 1
+            if current_streak > longest_streak:
+                longest_streak = current_streak
+        else:
+            current_streak = 0
+            
+        m.streak = current_streak
+        m.longest_streak = longest_streak
+        prev_date = m.date
+    
     db.commit()
     db.refresh(metrics)
     return metrics
