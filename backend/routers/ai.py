@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import date
+from datetime import date, datetime
 from google import genai
 import os
 from database import get_db
@@ -78,8 +78,9 @@ def get_todays_mission(db: Session = Depends(get_db)):
 
 @router.get("/chat/history", response_model=List[schemas.ChatMessage])
 def get_chat_history(db: Session = Depends(get_db)):
-    # Retrieve all chat history ordered by creation time
-    messages = db.query(models.ChatHistory).order_by(models.ChatHistory.created_at.asc()).all()
+    # Retrieve only today's chat history so the UI refreshes each day
+    today_start = datetime.combine(date.today(), datetime.min.time())
+    messages = db.query(models.ChatHistory).filter(models.ChatHistory.created_at >= today_start).order_by(models.ChatHistory.created_at.asc()).all()
     return messages
 
 @router.post("/chat", response_model=schemas.ChatMessage)
@@ -92,9 +93,10 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
 
     # 2. Gather context
     today = date.today()
-    tasks_today = db.query(models.Task).all()
-    pending_tasks = [t for t in tasks_today if t.status == 'Pending']
-    completed_tasks = [t for t in tasks_today if t.status == 'Completed']
+    
+    # Get all pending tasks and the most recently completed 30 tasks for memory
+    pending_tasks = db.query(models.Task).filter(models.Task.status == 'Pending').all()
+    completed_tasks = db.query(models.Task).filter(models.Task.status == 'Completed').order_by(models.Task.completed_at.desc()).limit(30).all()
     
     non_negotiables = db.query(models.NonNegotiable).all()
     nn_logs = db.query(models.NonNegotiableLog).filter(models.NonNegotiableLog.date == today).all()
@@ -121,8 +123,9 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     {tasks_summary}
     """
 
-    # 3. Retrieve recent history for context
-    history = db.query(models.ChatHistory).order_by(models.ChatHistory.created_at.asc()).all()[-20:]
+    # 3. Retrieve recent history for context (only today's chat)
+    today_start = datetime.combine(today, datetime.min.time())
+    history = db.query(models.ChatHistory).filter(models.ChatHistory.created_at >= today_start).order_by(models.ChatHistory.created_at.asc()).all()[-20:]
     
     # 4. Construct Prompt
     system_prompt = f"""
