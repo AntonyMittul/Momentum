@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { fetchChatHistory, sendChatMessage } from "@/lib/api";
 import { Send, Bot, User } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 export default function AssistantPage() {
   const [messages, setMessages] = useState<any[]>([]);
@@ -60,8 +61,8 @@ export default function AssistantPage() {
         ) : (
           messages.map((msg, idx) => (
             <div key={idx} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-              <div className={`max-w-[80%] rounded px-4 py-3 text-sm leading-relaxed ${msg.role === "user" ? "bg-muted text-foreground" : "bg-transparent border border-border text-foreground whitespace-pre-wrap"}`}>
-                {msg.message}
+              <div className={`max-w-[80%] rounded px-4 py-3 text-sm leading-relaxed ${msg.role === "user" ? "bg-muted text-foreground" : "bg-transparent border border-border text-foreground"} [&>p]:mb-4 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:ml-4 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:ml-4 [&>ol]:mb-4 [&_strong]:font-bold`}>
+                <ReactMarkdown>{msg.message}</ReactMarkdown>
               </div>
             </div>
           ))
