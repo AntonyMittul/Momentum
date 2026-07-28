@@ -110,8 +110,8 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     metrics = db.query(models.DailyMetrics).order_by(models.DailyMetrics.date.desc()).first()
     metrics_summary = f"Consistency Score: {metrics.consistency_score if metrics else 0}/100, Current Streak: {metrics.streak if metrics else 0} days."
 
-    tasks_summary = "Pending Tasks:\n" + "\n".join([f"- {t.title} ({t.priority})" for t in pending_tasks])
-    tasks_summary += "\nCompleted Tasks:\n" + "\n".join([f"- {t.title}" for t in completed_tasks])
+    tasks_summary = "Pending Tasks:\n" + "\n".join([f"- {t.title} (Priority: {t.priority}, Created: {t.created_at.strftime('%Y-%m-%d')})" for t in pending_tasks])
+    tasks_summary += "\nCompleted Tasks (Last 30):\n" + "\n".join([f"- {t.title} (Completed: {t.completed_at.strftime('%Y-%m-%d') if t.completed_at else 'Unknown'})" for t in completed_tasks])
     
     context = f"""
     Current Context for Today ({today}):
