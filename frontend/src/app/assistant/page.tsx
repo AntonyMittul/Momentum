@@ -45,11 +45,8 @@ export default function AssistantPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)] md:h-[calc(100vh-6rem)]">
       <header className="mb-6 flex items-center gap-3">
-        <div className="bg-foreground text-background p-2 rounded">
-          <Bot className="w-6 h-6" />
-        </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">ADHD Assistant</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Assistant</h1>
           <p className="text-sm text-gray-500">Your supportive friend and productivity specialist.</p>
         </div>
       </header>
@@ -63,9 +60,6 @@ export default function AssistantPage() {
         ) : (
           messages.map((msg, idx) => (
             <div key={idx} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-              <div className={`shrink-0 w-8 h-8 rounded flex items-center justify-center ${msg.role === "user" ? "bg-muted text-muted-foreground" : "bg-foreground text-background"}`}>
-                {msg.role === "user" ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
-              </div>
               <div className={`max-w-[80%] rounded px-4 py-3 text-sm leading-relaxed ${msg.role === "user" ? "bg-muted text-foreground" : "bg-transparent border border-border text-foreground whitespace-pre-wrap"}`}>
                 {msg.message}
               </div>
@@ -74,9 +68,6 @@ export default function AssistantPage() {
         )}
         {isLoading && (
           <div className="flex gap-3 flex-row">
-            <div className="shrink-0 w-8 h-8 rounded flex items-center justify-center bg-foreground text-background">
-              <Bot className="w-5 h-5" />
-            </div>
             <div className="max-w-[80%] rounded px-4 py-3 text-sm leading-relaxed bg-transparent border border-border text-foreground italic flex items-center gap-1">
               <span className="animate-pulse">Thinking</span>
               <span className="animate-pulse" style={{ animationDelay: "200ms" }}>.</span>
