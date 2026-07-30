@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Target, Plus, Trash2 } from "lucide-react";
+import { Target, Plus, Trash2, Edit2, Check, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { fetchGoals, createGoal, updateGoal, deleteGoal } from "@/lib/api";
 
@@ -10,6 +10,8 @@ export default function GoalsPage() {
   const [weeklyTitle, setWeeklyTitle] = useState("");
   const [monthlyTitle, setMonthlyTitle] = useState("");
   const [loading, setLoading] = useState(true);
+  const [editingGoalId, setEditingGoalId] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
 
   const loadGoals = async () => {
     try {
@@ -71,6 +73,27 @@ export default function GoalsPage() {
     }
   };
 
+  const startEditing = (goal: any) => {
+    setEditingGoalId(goal.id);
+    setEditingTitle(goal.title);
+  };
+
+  const cancelEditing = () => {
+    setEditingGoalId(null);
+    setEditingTitle("");
+  };
+
+  const handleEditSave = async (id: number) => {
+    if (!editingTitle.trim()) return;
+    try {
+      await updateGoal(id, { title: editingTitle.trim() });
+      setEditingGoalId(null);
+      loadGoals();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const weeklyGoals = goals.filter((g) => g.type === "weekly");
   const monthlyGoals = goals.filter((g) => g.type === "monthly");
 
@@ -96,40 +119,69 @@ export default function GoalsPage() {
             key={g.id} 
             className={`border border-border p-4 rounded-xl flex items-center justify-between transition-all duration-300 ${g.status === "Completed" ? 'bg-muted/50 opacity-60' : 'bg-card hover:shadow-md'}`}
           >
-            <div className="flex items-center gap-4 flex-1 overflow-hidden">
-              <button 
-                onClick={() => handleToggleStatus(g)}
-                className={`w-5 h-5 rounded flex items-center justify-center transition-colors shrink-0 ${
-                  g.status === "Completed" ? "bg-foreground text-background" : 
-                  g.status === "Ongoing" ? "border-2 border-blue-500 bg-blue-500/20" : 
-                  "border-2 border-border hover:border-foreground/50"
-                }`}
-              >
-                {g.status === "Completed" && (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                )}
-                {g.status === "Ongoing" && (
-                  <div className="w-2.5 h-2.5 bg-blue-500 rounded-sm animate-pulse" />
-                )}
-              </button>
-              
-              <div className="flex flex-col min-w-0">
-                <span className={`font-medium truncate ${g.status === "Completed" ? 'line-through text-muted-foreground' : ''}`}>
-                  {g.title}
-                </span>
-                <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mt-1 flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${g.status === "Completed" ? "bg-muted-foreground" : g.status === "Ongoing" ? "bg-blue-500" : "bg-yellow-500"}`} />
-                  {g.status}
-                </span>
+            {editingGoalId === g.id ? (
+              <div className="flex items-center gap-2 w-full">
+                <input 
+                  type="text" 
+                  value={editingTitle} 
+                  onChange={(e) => setEditingTitle(e.target.value)} 
+                  className="flex-1 bg-background border border-border rounded p-2 focus:outline-none focus:ring-2 focus:ring-foreground/50" 
+                  autoFocus 
+                  onKeyDown={(e) => e.key === 'Enter' && handleEditSave(g.id)}
+                />
+                <button onClick={() => handleEditSave(g.id)} className="p-2 text-green-600 hover:bg-green-600/10 rounded transition-colors">
+                  <Check className="w-5 h-5" />
+                </button>
+                <button onClick={cancelEditing} className="p-2 text-muted-foreground hover:bg-muted rounded transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-            </div>
-            
-            <button 
-              onClick={() => handleDelete(g.id)}
-              className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            ) : (
+              <>
+                <div className="flex items-center gap-4 flex-1 overflow-hidden">
+                  <button 
+                    onClick={() => handleToggleStatus(g)}
+                    className={`w-5 h-5 rounded flex items-center justify-center transition-colors shrink-0 ${
+                      g.status === "Completed" ? "bg-foreground text-background" : 
+                      g.status === "Ongoing" ? "border-2 border-blue-500 bg-blue-500/20" : 
+                      "border-2 border-border hover:border-foreground/50"
+                    }`}
+                  >
+                    {g.status === "Completed" && (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    )}
+                    {g.status === "Ongoing" && (
+                      <div className="w-2.5 h-2.5 bg-blue-500 rounded-sm animate-pulse" />
+                    )}
+                  </button>
+                  
+                  <div className="flex flex-col min-w-0">
+                    <span className={`font-medium truncate ${g.status === "Completed" ? 'line-through text-muted-foreground' : ''}`}>
+                      {g.title}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mt-1 flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${g.status === "Completed" ? "bg-muted-foreground" : g.status === "Ongoing" ? "bg-blue-500" : "bg-yellow-500"}`} />
+                      {g.status}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-1 shrink-0">
+                  <button 
+                    onClick={() => startEditing(g)}
+                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(g.id)}
+                    className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>
