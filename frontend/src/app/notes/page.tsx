@@ -101,7 +101,7 @@ export default function NotesPage() {
           {notes.map((note) => (
             <div 
               key={note.id} 
-              className={`relative group p-6 rounded-xl shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden ${note.color}`}
+              className={`relative group p-6 rounded-xl shadow-md transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden flex flex-col ${note.color}`}
             >
               {/* Folded corner effect */}
               <div className="absolute top-0 right-0 w-8 h-8 bg-black/10 rounded-bl-xl transition-all duration-300 group-hover:w-10 group-hover:h-10" />
@@ -114,7 +114,7 @@ export default function NotesPage() {
               <p className="whitespace-pre-wrap leading-relaxed font-medium opacity-90 text-sm md:text-base">
                 {note.content}
               </p>
-              <div className="mt-6 pt-4 border-t border-black/10 flex justify-between items-center">
+              <div className="mt-auto pt-4 border-t border-black/10 flex justify-between items-center">
                 <span className="text-xs font-semibold opacity-60 tracking-wider">
                   {new Date(note.created_at + (note.created_at.endsWith('Z') ? '' : 'Z')).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </span>
