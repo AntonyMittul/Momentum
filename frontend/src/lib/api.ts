@@ -33,29 +33,27 @@ export async function generateReport(date: string) {
   return res.json();
 }
 
+// --- NOTES ---
 export async function fetchNotes() {
-  const res = await fetch(`${API_BASE_URL}/api/notes/`, { cache: 'no-store' });
-  if (!res.ok) throw new Error("Failed to fetch notes");
+  const res = await fetch(`${API_BASE_URL}/api/notes`);
   return res.json();
 }
 
-export async function createNote(data: any) {
-  const res = await fetch(`${API_BASE_URL}/api/notes/`, {
+export async function createNote(note: any) {
+  const res = await fetch(`${API_BASE_URL}/api/notes`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    body: JSON.stringify(note),
   });
-  if (!res.ok) throw new Error("Failed to create note");
   return res.json();
 }
 
-export async function updateNote(id: number, data: any) {
+export async function updateNote(id: number, updates: any) {
   const res = await fetch(`${API_BASE_URL}/api/notes/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
+    body: JSON.stringify(updates),
   });
-  if (!res.ok) throw new Error("Failed to update note");
   return res.json();
 }
 
@@ -63,7 +61,37 @@ export async function deleteNote(id: number) {
   const res = await fetch(`${API_BASE_URL}/api/notes/${id}`, {
     method: "DELETE",
   });
-  if (!res.ok) throw new Error("Failed to delete note");
+  return res.json();
+}
+
+// --- GOALS ---
+export async function fetchGoals() {
+  const res = await fetch(`${API_BASE_URL}/api/goals`);
+  return res.json();
+}
+
+export async function createGoal(goal: any) {
+  const res = await fetch(`${API_BASE_URL}/api/goals`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(goal),
+  });
+  return res.json();
+}
+
+export async function updateGoal(id: number, updates: any) {
+  const res = await fetch(`${API_BASE_URL}/api/goals/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates),
+  });
+  return res.json();
+}
+
+export async function deleteGoal(id: number) {
+  const res = await fetch(`${API_BASE_URL}/api/goals/${id}`, {
+    method: "DELETE",
+  });
   return res.json();
 }
 

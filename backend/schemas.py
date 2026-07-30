@@ -105,3 +105,24 @@ class ChatMessage(BaseModel):
 
     class Config:
         from_attributes = True
+
+class GoalBase(BaseModel):
+    title: str
+    type: str
+
+class GoalCreate(GoalBase):
+    pass
+
+class GoalUpdate(BaseModel):
+    title: Optional[str] = None
+    type: Optional[str] = None
+    status: Optional[str] = None
+
+class Goal(GoalBase):
+    id: int
+    status: str
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

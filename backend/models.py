@@ -66,3 +66,13 @@ class ChatHistory(Base):
     role = Column(String, nullable=False) # 'user' or 'assistant'
     message = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class Goal(Base):
+    __tablename__ = "goals"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True, nullable=False)
+    type = Column(String, index=True, nullable=False) # 'weekly' or 'monthly'
+    status = Column(String, default="Pending") # 'Pending', 'Ongoing', 'Completed'
+    created_at = Column(DateTime, default=datetime.utcnow)
+    completed_at = Column(DateTime, nullable=True)

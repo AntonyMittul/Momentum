@@ -113,12 +113,21 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     tasks_summary = "Pending Tasks:\n" + "\n".join([f"- {t.title} (Priority: {t.priority}, Created: {t.created_at.strftime('%Y-%m-%d')})" for t in pending_tasks])
     tasks_summary += "\nCompleted Tasks (Last 30):\n" + "\n".join([f"- {t.title} (Completed: {t.completed_at.strftime('%Y-%m-%d') if t.completed_at else 'Unknown'})" for t in completed_tasks])
     
+    goals = db.query(models.Goal).all()
+    weekly_goals = [g for g in goals if g.type == "weekly" and g.status != "Completed"]
+    monthly_goals = [g for g in goals if g.type == "monthly" and g.status != "Completed"]
+    
+    goals_summary = "Weekly Goals (Pending/Ongoing):\n" + "\n".join([f"- {g.title} ({g.status})" for g in weekly_goals])
+    goals_summary += "\nMonthly Goals (Pending/Ongoing):\n" + "\n".join([f"- {g.title} ({g.status})" for g in monthly_goals])
+    
     context = f"""
     Current Context for Today ({today}):
     {metrics_summary}
 
     Non-Negotiable Habits:
     {chr(10).join(nn_status)}
+
+    {goals_summary}
 
     {tasks_summary}
     """
