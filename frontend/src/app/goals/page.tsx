@@ -15,7 +15,11 @@ export default function GoalsPage() {
     try {
       setLoading(true);
       const data = await fetchGoals();
-      setGoals(data || []);
+      if (Array.isArray(data)) {
+        setGoals(data);
+      } else {
+        setGoals([]);
+      }
     } catch (e) {
       console.error(e);
     } finally {
