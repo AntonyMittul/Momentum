@@ -16,7 +16,7 @@ import { createTask } from "@/lib/api";
 
 const CATEGORIES = ["AI & Machine Learning", "Projects", "Career", "Fitness", "Reading", "Chess", "Personal", "Other"];
 
-export default function CreateTaskModal({ onTaskCreated }: { onTaskCreated?: () => void }) {
+export default function CreateTaskModal({ onTaskCreated }: { onTaskCreated?: (task: any) => void }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -32,7 +32,7 @@ export default function CreateTaskModal({ onTaskCreated }: { onTaskCreated?: () 
     
     setIsSubmitting(true);
     try {
-      await createTask({
+      const createdTask = await createTask({
         title,
         description: description || null,
         category,
@@ -46,7 +46,7 @@ export default function CreateTaskModal({ onTaskCreated }: { onTaskCreated?: () 
       setPriority("Medium");
       setDuration("");
       setOpen(false);
-      if (onTaskCreated) onTaskCreated();
+      if (onTaskCreated) onTaskCreated(createdTask);
     } catch (error: any) {
       console.error("Failed to save task:", error);
       alert("Failed to save task. Please try again. Error: " + error.message);

@@ -16,7 +16,7 @@ import { updateTask } from "@/lib/api";
 
 const CATEGORIES = ["AI & Machine Learning", "Projects", "Career", "Fitness", "Reading", "Chess", "Personal", "Other"];
 
-export default function EditTaskModal({ task, onTaskUpdated }: { task: any, onTaskUpdated?: () => void }) {
+export default function EditTaskModal({ task, onTaskUpdated }: { task: any, onTaskUpdated?: (updatedTask: any, action: 'update') => void }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(task.title || "");
   const [description, setDescription] = useState(task.description || "");
@@ -32,7 +32,7 @@ export default function EditTaskModal({ task, onTaskUpdated }: { task: any, onTa
     
     setIsSubmitting(true);
     try {
-      await updateTask(task.id, {
+      const updatedTask = await updateTask(task.id, {
         title,
         description: description || null,
         category,
@@ -41,7 +41,7 @@ export default function EditTaskModal({ task, onTaskUpdated }: { task: any, onTa
       });
       
       setOpen(false);
-      if (onTaskUpdated) onTaskUpdated();
+      if (onTaskUpdated) onTaskUpdated(updatedTask, 'update');
     } catch (error: any) {
       console.error("Failed to update task:", error);
       alert("Failed to update task. Please try again. Error: " + error.message);

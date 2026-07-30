@@ -7,37 +7,46 @@ import { updateTask, deleteTask } from "@/lib/api";
 import { Trash2, Brain, Folder, Briefcase, Dumbbell, BookOpen, Crown, User, List } from "lucide-react";
 import EditTaskModal from "./EditTaskModal";
 
-export default function TaskCard({ task, onTaskUpdate }: { task: any, onTaskUpdate?: () => void }) {
+export default function TaskCard({ task, onTaskUpdate }: { task: any, onTaskUpdate?: (updatedTask: any, action: 'update' | 'delete') => void }) {
   const [completed, setCompleted] = useState(task.status === "Completed");
   const [isFading, setIsFading] = useState(false);
 
   const handleCheck = async (checked: boolean) => {
     setCompleted(checked);
     if (checked) setIsFading(true);
-    
+    // Optimistic Update Callback
+    if (onTaskUpdate) {
+      onTaskUpdate({ ...task, status: checked ? "Completed" : "Pending" }, 'update');
+    }
+
     // API Call
     try {
       await updateTask(task.id, { status: checked ? "Completed" : "Pending" });
-      if (onTaskUpdate) {
-        setTimeout(onTaskUpdate, 500); // give time for animation
-      }
     } catch (e) {
       console.error(e);
       setCompleted(!checked);
       setIsFading(false);
+      if (onTaskUpdate) {
+        onTaskUpdate({ ...task, status: !checked ? "Completed" : "Pending" }, 'update');
+      }
     }
   };
 
   const handleDelete = async () => {
     setIsFading(true);
+    
+    // Optimistic Delete
+    if (onTaskUpdate) {
+      onTaskUpdate(task, 'delete');
+    }
+
     try {
       await deleteTask(task.id);
-      if (onTaskUpdate) {
-        setTimeout(onTaskUpdate, 300); // give time for animation
-      }
     } catch (e) {
       console.error(e);
       setIsFading(false);
+      // We can't easily undo a delete in parent without keeping state, so we just log error or force reload
+      window.location.reload();
     }
   };
 

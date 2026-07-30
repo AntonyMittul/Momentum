@@ -38,38 +38,50 @@ export default function GoalsPage() {
     const title = type === "weekly" ? weeklyTitle : monthlyTitle;
     if (!title.trim()) return;
 
+    // Optimistic UI for create (id is temporary)
+    const tempGoal = { id: Date.now(), title: title.trim(), type, status: "Pending" };
+    setGoals(prev => [...prev, tempGoal]);
+
+    if (type === "weekly") setWeeklyTitle("");
+    else setMonthlyTitle("");
+
     try {
-      await createGoal({ title: title.trim(), type });
-      if (type === "weekly") setWeeklyTitle("");
-      else setMonthlyTitle("");
-      loadGoals();
+      const createdGoal = await createGoal({ title: title.trim(), type });
+      setGoals(prev => prev.map(g => g.id === tempGoal.id ? createdGoal : g));
     } catch (e) {
       console.error(e);
+      setGoals(prev => prev.filter(g => g.id !== tempGoal.id));
     }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this goal?")) return;
+    
+    const original = [...goals];
+    setGoals(prev => prev.filter(g => g.id !== id));
+    
     try {
       await deleteGoal(id);
-      loadGoals();
     } catch (e) {
       console.error(e);
+      setGoals(original);
     }
   };
 
   const handleToggleStatus = async (goal: any) => {
-    // Current flow: Pending -> Ongoing -> Completed -> Pending
     let newStatus = "Ongoing";
     if (goal.status === "Pending") newStatus = "Ongoing";
     else if (goal.status === "Ongoing") newStatus = "Completed";
     else newStatus = "Pending";
 
+    const original = [...goals];
+    setGoals(prev => prev.map(g => g.id === goal.id ? { ...g, status: newStatus } : g));
+
     try {
       await updateGoal(goal.id, { status: newStatus });
-      loadGoals();
     } catch (e) {
       console.error(e);
+      setGoals(original);
     }
   };
 
@@ -85,12 +97,16 @@ export default function GoalsPage() {
 
   const handleEditSave = async (id: number) => {
     if (!editingTitle.trim()) return;
+    
+    const original = [...goals];
+    setGoals(prev => prev.map(g => g.id === id ? { ...g, title: editingTitle.trim() } : g));
+    setEditingGoalId(null);
+    
     try {
       await updateGoal(id, { title: editingTitle.trim() });
-      setEditingGoalId(null);
-      loadGoals();
     } catch (e) {
       console.error(e);
+      setGoals(original);
     }
   };
 

@@ -92,13 +92,27 @@ export default function Dashboard() {
   };
 
   const handleToggleNN = async (id: number, completed: boolean) => {
+    const original = [...nonNegotiables];
+    setNonNegotiables(original.map(nn => nn.id === id ? { ...nn, completed_today: completed } : nn));
+    
     try {
-      setNonNegotiables(nonNegotiables.map(nn => nn.id === id ? { ...nn, completed_today: completed } : nn));
       await toggleNonNegotiable(id, completed);
-      loadData();
+      calculateMetrics(); // Background calculation, no await/reload needed
     } catch (e) {
       console.error(e);
-      loadData();
+      setNonNegotiables(original); // Rollback on error
+    }
+  };
+
+  const handleTaskUpdate = (updatedTask: any, action: 'update' | 'delete') => {
+    if (action === 'delete') {
+      setTasks(prev => prev.filter(t => t.id !== updatedTask.id));
+    } else {
+      setTasks(prev => {
+        const newTasks = prev.map(t => t.id === updatedTask.id ? { ...t, ...updatedTask } : t);
+        const priorityWeight: Record<string, number> = { "High": 3, "Medium": 2, "Low": 1 };
+        return newTasks.sort((a: any, b: any) => (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0));
+      });
     }
   };
 
@@ -219,7 +233,7 @@ export default function Dashboard() {
         ) : (
           <div className="space-y-3">
             {tasks.map((t: any) => (
-              <TaskCard key={t.id} task={t} onTaskUpdate={loadData} />
+              <TaskCard key={t.id} task={t} onTaskUpdate={handleTaskUpdate} />
             ))}
           </div>
         )}

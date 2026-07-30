@@ -43,6 +43,26 @@ export default function TasksPage() {
     loadData();
   }, []);
 
+  const handleTaskCreated = (newTask: any) => {
+    setTasks(prev => {
+      const updated = [...prev, newTask];
+      const priorityWeight: Record<string, number> = { "High": 3, "Medium": 2, "Low": 1 };
+      return updated.sort((a: any, b: any) => (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0));
+    });
+  };
+
+  const handleTaskUpdate = (updatedTask: any, action: 'update' | 'delete') => {
+    if (action === 'delete') {
+      setTasks(prev => prev.filter(t => t.id !== updatedTask.id));
+    } else {
+      setTasks(prev => {
+        const updated = prev.map(t => t.id === updatedTask.id ? { ...t, ...updatedTask } : t);
+        const priorityWeight: Record<string, number> = { "High": 3, "Medium": 2, "Low": 1 };
+        return updated.sort((a: any, b: any) => (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0));
+      });
+    }
+  };
+
   const pendingTasks = tasks.filter(t => t.status !== "Completed");
   const completedTasks = tasks.filter(t => t.status === "Completed");
 
@@ -59,7 +79,7 @@ export default function TasksPage() {
         ) : (
           <div className="space-y-3">
             {pendingTasks.map(t => (
-              <TaskCard key={t.id} task={t} onTaskUpdate={loadData} />
+              <TaskCard key={t.id} task={t} onTaskUpdate={handleTaskUpdate} />
             ))}
           </div>
         )}
@@ -70,13 +90,13 @@ export default function TasksPage() {
           <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">Completed</h2>
           <div className="space-y-3 opacity-70">
             {completedTasks.map(t => (
-              <TaskCard key={t.id} task={t} onTaskUpdate={loadData} />
+              <TaskCard key={t.id} task={t} onTaskUpdate={handleTaskUpdate} />
             ))}
           </div>
         </section>
       )}
 
-      <CreateTaskModal onTaskCreated={loadData} />
+      <CreateTaskModal onTaskCreated={handleTaskCreated} />
     </div>
   );
 }

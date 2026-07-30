@@ -37,21 +37,42 @@ export default function NotesPage() {
     e.preventDefault();
     if (!content.trim()) return;
 
+    const isEditing = !!editingNote;
+    const tempId = isEditing ? editingNote.id : Date.now();
+    const tempNote = {
+      id: tempId,
+      title: title.trim() || null,
+      content: content.trim(),
+      color: isEditing ? editingNote.color : pastels[Math.floor(Math.random() * pastels.length)],
+      created_at: isEditing ? editingNote.created_at : new Date().toISOString()
+    };
+
+    // Optimistic UI update
+    if (isEditing) {
+      setNotes(prev => prev.map(n => n.id === tempId ? { ...n, ...tempNote } : n));
+    } else {
+      setNotes(prev => [tempNote, ...prev]);
+    }
+
+    const savedTitle = title;
+    const savedContent = content;
+    
+    setTitle("");
+    setContent("");
+    setEditingNote(null);
+    setIsModalOpen(false);
+
     try {
-      if (editingNote) {
-        await updateNote(editingNote.id, { title: title.trim() || null, content: content.trim() });
+      if (isEditing) {
+        const updated = await updateNote(tempId, { title: savedTitle.trim() || null, content: savedContent.trim() });
+        setNotes(prev => prev.map(n => n.id === tempId ? updated : n));
       } else {
-        const randomColor = pastels[Math.floor(Math.random() * pastels.length)];
-        await createNote({ title: title.trim() || null, content: content.trim(), color: randomColor });
+        const created = await createNote({ title: savedTitle.trim() || null, content: savedContent.trim(), color: tempNote.color });
+        setNotes(prev => prev.map(n => n.id === tempId ? created : n));
       }
-      
-      setTitle("");
-      setContent("");
-      setEditingNote(null);
-      setIsModalOpen(false);
-      loadNotes();
     } catch (e: any) {
       console.error(e);
+      loadNotes(); // Revert on failure
       alert("Failed to save note. Make sure your Render backend has finished deploying!");
     }
   };
@@ -72,11 +93,15 @@ export default function NotesPage() {
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this note?")) return;
+    
+    const original = [...notes];
+    setNotes(prev => prev.filter(n => n.id !== id));
+    
     try {
       await deleteNote(id);
-      loadNotes();
     } catch (e) {
       console.error(e);
+      setNotes(original);
     }
   };
 
