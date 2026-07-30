@@ -19,9 +19,41 @@ const getNNIcon = (title: string) => {
   return <ShieldCheck className="w-4 h-4 mr-2 text-muted-foreground shrink-0" />;
 };
 
+const motivationalMessages = [
+  {
+    title: "Eyes on the prize!",
+    body: "Don't forget the promises you made to yourself. Tap here to review your active goals and keep your momentum going!"
+  },
+  {
+    title: "Small steps, big results.",
+    body: "Every action you take today builds the future you want tomorrow. Check your goals and see what's next!"
+  },
+  {
+    title: "Stay focused.",
+    body: "Distractions are everywhere, but so is your potential. Take a quick look at your goals to realign your focus."
+  },
+  {
+    title: "You've got this!",
+    body: "Consistency is your superpower. Review your weekly and monthly goals to make sure you're on the right track."
+  },
+  {
+    title: "Build the habit.",
+    body: "Motivation gets you started, but habit keeps you going. Check in on your goals and plan your next move."
+  },
+  {
+    title: "One day at a time.",
+    body: "Don't overwhelm yourself. Just focus on what you can do today to move closer to your monthly goals!"
+  },
+  {
+    title: "Protect your momentum.",
+    body: "You've worked hard to get here. Keep the streak alive by reviewing and tackling your current objectives."
+  }
+];
+
 export default function Dashboard() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [nonNegotiables, setNonNegotiables] = useState<any[]>([]);
+  const [dailyMessage, setDailyMessage] = useState(motivationalMessages[0]);
 
   const loadData = async () => {
     try {
@@ -93,7 +125,17 @@ export default function Dashboard() {
     // Update the date at midnight if the user leaves the tab open
     const interval = setInterval(() => {
       setCurrentDate(getFormattedDate());
+      
+      // Update daily message based on the new day
+      const today = new Date();
+      const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+      setDailyMessage(motivationalMessages[dayOfYear % motivationalMessages.length]);
     }, 60000 * 60); // Check every hour
+    
+    // Set initial message on mount
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+    setDailyMessage(motivationalMessages[dayOfYear % motivationalMessages.length]);
     
     return () => clearInterval(interval);
   }, []);
@@ -123,9 +165,9 @@ export default function Dashboard() {
             <Target className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">Eyes on the prize!</h3>
+            <h3 className="font-semibold text-sm">{dailyMessage.title}</h3>
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              Don't forget the promises you made to yourself. Tap here to review your active goals and keep your momentum going!
+              {dailyMessage.body}
             </p>
           </div>
         </Link>
