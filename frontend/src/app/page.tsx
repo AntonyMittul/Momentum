@@ -119,11 +119,11 @@ export default function Dashboard() {
         </div>
         
         <Link href="/goals" className="bg-card border border-border p-4 rounded-xl shadow-sm hover:shadow-md transition-all group max-w-sm flex items-start gap-4">
-          <div className="bg-blue-500/10 p-2 rounded-lg group-hover:scale-110 transition-transform shrink-0">
-            <Target className="w-5 h-5 text-blue-500" />
+          <div className="bg-muted p-2 rounded-lg group-hover:scale-110 transition-transform shrink-0">
+            <Target className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm">Eyes on the prize! 🎯</h3>
+            <h3 className="font-semibold text-sm">Eyes on the prize!</h3>
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
               Don't forget the promises you made to yourself. Tap here to review your active goals and keep your momentum going!
             </p>
