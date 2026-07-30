@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { fetchTasks, calculateMetrics, fetchNonNegotiables, toggleNonNegotiable } from "@/lib/api";
 import TaskCard from "@/components/TaskCard";
+import Link from "next/link";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { ShieldCheck, Droplets, Sun, Pizza, Activity, Moon, BookOpen } from "lucide-react";
+import { ShieldCheck, Droplets, Sun, Pizza, Activity, Moon, BookOpen, Target } from "lucide-react";
 
 const getNNIcon = (title: string) => {
   const lower = title.toLowerCase();
@@ -107,13 +108,27 @@ export default function Dashboard() {
   return (
     <div className="space-y-16 pb-24">
       {/* Header Section */}
-      <section className="space-y-2">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-          {getGreeting()}
-        </h1>
-        <p className="text-muted-foreground text-lg font-medium tracking-wide">
-          {currentDate}
-        </p>
+      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
+            {getGreeting()}
+          </h1>
+          <p className="text-muted-foreground text-lg font-medium tracking-wide">
+            {currentDate}
+          </p>
+        </div>
+        
+        <Link href="/goals" className="bg-card border border-border p-4 rounded-xl shadow-sm hover:shadow-md transition-all group max-w-sm flex items-start gap-4">
+          <div className="bg-blue-500/10 p-2 rounded-lg group-hover:scale-110 transition-transform shrink-0">
+            <Target className="w-5 h-5 text-blue-500" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm">Eyes on the prize! 🎯</h3>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+              Don't forget the promises you made to yourself. Tap here to review your active goals and keep your momentum going!
+            </p>
+          </div>
+        </Link>
       </section>
 
       {/* Header Section (Kept without changes below, removed mission) */}
