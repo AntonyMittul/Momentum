@@ -14,6 +14,7 @@ export default function CalendarPage() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [nonNegotiables, setNonNegotiables] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'tasks' | 'habits'>('tasks');
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -123,8 +124,8 @@ export default function CalendarPage() {
                 key={day}
                 onClick={() => handleDateClick(day)}
                 className={`
-                  p-2 md:p-4 aspect-square flex items-center justify-center rounded-lg text-sm md:text-base font-medium transition-all duration-300
-                  ${isSelected ? "bg-foreground text-background scale-105 shadow-md" : "bg-muted/30 hover:bg-muted text-foreground"}
+                  py-3 md:py-4 flex items-center justify-center rounded-lg text-sm md:text-base font-medium transition-all duration-300
+                  ${isSelected ? "bg-foreground text-background shadow-md" : "bg-muted/30 hover:bg-muted text-foreground"}
                   ${isToday && !isSelected ? "border-2 border-foreground" : ""}
                 `}
               >
@@ -135,72 +136,89 @@ export default function CalendarPage() {
         </div>
       </section>
 
-      {/* Detailed View for Selected Date */}
+      {/* Detailed View for Selected Date (Modal) */}
       {selectedDate && (
-        <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 border border-border p-6 rounded-lg bg-card shadow-sm transition-colors duration-500">
-          <div className="flex justify-between items-end border-b border-border pb-4">
-            <h2 className="text-2xl font-bold tracking-tight">
-              {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-            </h2>
-            <button onClick={() => setSelectedDate(null)} className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 transition-colors">
-              <X className="w-4 h-4" /> Close
-            </button>
-          </div>
-          
-          {loading ? (
-            <div className="text-muted-foreground animate-pulse font-medium">Loading historical data...</div>
-          ) : (
-            <div className="space-y-12">
-              {/* Non-Negotiables */}
-              {nonNegotiables.length > 0 && (
-                <section>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
-                    Non-Negotiables
-                  </h3>
-                  <div className="space-y-3">
-                    {nonNegotiables.map((nn: any) => (
-                      <div key={nn.id} className="border border-border p-4 flex gap-4 bg-card items-center transition-colors opacity-80">
-                        <div className="pt-0.5 pointer-events-none">
-                          <Checkbox 
-                            checked={nn.completed_today} 
-                            disabled={true}
-                            className="border-border rounded-sm data-[state=checked]:bg-foreground data-[state=checked]:text-background"
-                          />
-                        </div>
-                        <div className="flex-1 flex justify-between items-center">
-                          <div>
-                            <h3 className={`font-medium ${nn.completed_today ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-                              {nn.title}
-                            </h3>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Tasks */}
-              <section>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">
-                  Tasks
-                </h3>
-                {tasks.length === 0 ? (
-                  <div className="text-gray-400 italic font-medium">No tasks were recorded on this day.</div>
-                ) : (
-                  <div className="space-y-3 pointer-events-none">
-                    {tasks.map((t: any) => (
-                      <div key={t.id} className="opacity-80 transition-opacity">
-                         {/* We pass a no-op onTaskUpdate since it's a historical view */}
-                        <TaskCard task={t} onTaskUpdate={() => {}} />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="flex justify-between items-center p-6 border-b border-border">
+              <h2 className="text-2xl font-bold tracking-tight">
+                {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+              </h2>
+              <button onClick={() => setSelectedDate(null)} className="text-muted-foreground hover:text-foreground transition-colors p-2">
+                <X className="w-5 h-5" />
+              </button>
             </div>
-          )}
-        </section>
+            
+            {/* Toggle Tabs */}
+            <div className="flex border-b border-border">
+              <button 
+                onClick={() => setActiveTab('tasks')}
+                className={`flex-1 py-4 text-sm font-semibold uppercase tracking-wider transition-colors ${activeTab === 'tasks' ? 'border-b-2 border-foreground text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'}`}
+              >
+                Tasks
+              </button>
+              <button 
+                onClick={() => setActiveTab('habits')}
+                className={`flex-1 py-4 text-sm font-semibold uppercase tracking-wider transition-colors ${activeTab === 'habits' ? 'border-b-2 border-foreground text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/30'}`}
+              >
+                Non-Negotiables
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 bg-muted/10">
+              {loading ? (
+                <div className="text-muted-foreground animate-pulse font-medium text-center py-10">Loading historical data...</div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Non-Negotiables View */}
+                  {activeTab === 'habits' && (
+                    <section className="animate-in fade-in duration-300">
+                      {nonNegotiables.length === 0 ? (
+                        <div className="text-gray-400 italic font-medium text-center py-8">No Non-Negotiables recorded.</div>
+                      ) : (
+                        <div className="space-y-3">
+                          {nonNegotiables.map((nn: any) => (
+                            <div key={nn.id} className="border border-border rounded p-4 flex gap-4 bg-card items-center shadow-sm opacity-90 pointer-events-none">
+                              <div className="pt-0.5">
+                                <Checkbox 
+                                  checked={nn.completed_today} 
+                                  disabled={true}
+                                  className="border-border rounded-sm data-[state=checked]:bg-foreground data-[state=checked]:text-background"
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <h3 className={`font-medium ${nn.completed_today ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                                  {nn.title}
+                                </h3>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  )}
+
+                  {/* Tasks View */}
+                  {activeTab === 'tasks' && (
+                    <section className="animate-in fade-in duration-300">
+                      {tasks.length === 0 ? (
+                        <div className="text-gray-400 italic font-medium text-center py-8">No tasks were recorded on this day.</div>
+                      ) : (
+                        <div className="space-y-3 pointer-events-none opacity-90">
+                          {tasks.map((t: any) => (
+                            <div key={t.id}>
+                              <TaskCard task={t} onTaskUpdate={() => {}} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
