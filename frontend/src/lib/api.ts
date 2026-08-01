@@ -174,10 +174,11 @@ export async function fetchChatHistory() {
 }
 
 export async function sendChatMessage(message: string, localTime?: string) {
+  const tzOffset = new Date().getTimezoneOffset();
   const res = await fetch(`${API_BASE_URL}/api/ai/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, local_time: localTime || new Date().toLocaleString() }),
+    body: JSON.stringify({ message, local_time: localTime || new Date().toLocaleString(), tz_offset: tzOffset }),
   });
   if (!res.ok) throw new Error("Failed to send message");
   return res.json();

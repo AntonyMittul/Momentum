@@ -98,6 +98,7 @@ class Note(NoteBase):
 class ChatMessageCreate(BaseModel):
     message: str
     local_time: Optional[str] = None
+    tz_offset: Optional[int] = 0
 
 class ChatMessage(BaseModel):
     id: int

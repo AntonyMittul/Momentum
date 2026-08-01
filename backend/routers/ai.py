@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from google import genai
 import os
 from database import get_db
@@ -110,8 +110,22 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     metrics = db.query(models.DailyMetrics).order_by(models.DailyMetrics.date.desc()).first()
     metrics_summary = f"Consistency Score: {metrics.consistency_score if metrics else 0}/100, Current Streak: {metrics.streak if metrics else 0} days."
 
-    tasks_summary = "Pending Tasks:\n" + "\n".join([f"- {t.title} (Priority: {t.priority}, Created: {t.created_at.strftime('%Y-%m-%d')})" for t in pending_tasks])
-    tasks_summary += "\nCompleted Tasks (Last 100):\n" + "\n".join([f"- {t.title} (Completed: {t.completed_at.strftime('%Y-%m-%d %I:%M %p') if t.completed_at else 'Unknown'})" for t in completed_tasks])
+    tz_offset = req.tz_offset or 0
+
+    pending_formatted = []
+    for t in pending_tasks:
+        dt = t.created_at.replace(tzinfo=None) - timedelta(minutes=tz_offset) if t.created_at else None
+        dt_str = dt.strftime('%Y-%m-%d') if dt else 'Unknown'
+        pending_formatted.append(f"- {t.title} (Priority: {t.priority}, Created: {dt_str})")
+
+    completed_formatted = []
+    for t in completed_tasks:
+        dt = t.completed_at.replace(tzinfo=None) - timedelta(minutes=tz_offset) if t.completed_at else None
+        dt_str = dt.strftime('%Y-%m-%d %I:%M %p') if dt else 'Unknown'
+        completed_formatted.append(f"- {t.title} (Completed: {dt_str})")
+
+    tasks_summary = "Pending Tasks:\n" + "\n".join(pending_formatted)
+    tasks_summary += "\nCompleted Tasks (Last 100):\n" + "\n".join(completed_formatted)
     
     goals = db.query(models.Goal).all()
     weekly_goals = [g for g in goals if g.type == "weekly" and g.status != "Completed"]
