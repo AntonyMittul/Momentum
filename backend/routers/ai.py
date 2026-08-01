@@ -115,14 +115,20 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     pending_formatted = []
     for t in pending_tasks:
         dt = t.created_at.replace(tzinfo=None) - timedelta(minutes=tz_offset) if t.created_at else None
-        dt_str = dt.strftime('%Y-%m-%d') if dt else 'Unknown'
+        dt_str = dt.strftime('%Y-%m-%d %I:%M %p') if dt else 'Unknown'
         pending_formatted.append(f"- {t.title} (Priority: {t.priority}, Created: {dt_str})")
 
     completed_formatted = []
     for t in completed_tasks:
+        # Created Time
+        c_dt = t.created_at.replace(tzinfo=None) - timedelta(minutes=tz_offset) if t.created_at else None
+        c_dt_str = c_dt.strftime('%Y-%m-%d %I:%M %p') if c_dt else 'Unknown'
+        
+        # Completed Time
         dt = t.completed_at.replace(tzinfo=None) - timedelta(minutes=tz_offset) if t.completed_at else None
         dt_str = dt.strftime('%Y-%m-%d %I:%M %p') if dt else 'Unknown'
-        completed_formatted.append(f"- {t.title} (Completed: {dt_str})")
+        
+        completed_formatted.append(f"- {t.title} (Created: {c_dt_str}, Completed: {dt_str})")
 
     tasks_summary = "Pending Tasks:\n" + "\n".join(pending_formatted)
     tasks_summary += "\nCompleted Tasks (Last 100):\n" + "\n".join(completed_formatted)
