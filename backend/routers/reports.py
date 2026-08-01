@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from google import genai
 import os
 from database import get_db
@@ -9,6 +9,9 @@ import models
 from fpdf import FPDF
 
 router = APIRouter()
+
+def get_ist_date():
+    return (datetime.utcnow() + timedelta(hours=5, minutes=30)).date()
 
 class PDF(FPDF):
     def header(self):
@@ -23,7 +26,7 @@ class PDF(FPDF):
 
 @router.get("/weekly")
 def get_weekly_report(db: Session = Depends(get_db)):
-    today = date.today()
+    today = get_ist_date()
     # Find the Monday of the current week (0 = Monday, 6 = Sunday)
     start_of_week = today - timedelta(days=today.weekday())
     end_of_week = start_of_week + timedelta(days=6)

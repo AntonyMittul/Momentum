@@ -9,9 +9,12 @@ import models, schemas
 
 router = APIRouter()
 
+def get_ist_date():
+    return (datetime.utcnow() + timedelta(hours=5, minutes=30)).date()
+
 @router.get("/morning-coach", response_model=schemas.AIMessage)
 def get_morning_coach(db: Session = Depends(get_db)):
-    today = date.today()
+    today = get_ist_date()
     ai_msg = db.query(models.AIMessage).filter(models.AIMessage.date == today).first()
     
     if ai_msg:
@@ -79,7 +82,7 @@ def get_todays_mission(db: Session = Depends(get_db)):
 @router.get("/chat/history", response_model=List[schemas.ChatMessage])
 def get_chat_history(db: Session = Depends(get_db)):
     # Retrieve only today's chat history so the UI refreshes each day
-    today_start = datetime.combine(date.today(), datetime.min.time())
+    today_start = datetime.combine(get_ist_date(), datetime.min.time())
     messages = db.query(models.ChatHistory).filter(models.ChatHistory.created_at >= today_start).order_by(models.ChatHistory.created_at.asc()).all()
     return messages
 
@@ -92,7 +95,7 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     db.refresh(user_msg)
 
     # 2. Gather context
-    today = date.today()
+    today = get_ist_date()
     
     # Get all pending tasks and the most recently completed 100 tasks for memory (BPT analysis)
     pending_tasks = db.query(models.Task).filter(models.Task.status == 'Pending').all()
@@ -110,23 +113,15 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     metrics = db.query(models.DailyMetrics).order_by(models.DailyMetrics.date.desc()).first()
     metrics_summary = f"Consistency Score: {metrics.consistency_score if metrics else 0}/100, Current Streak: {metrics.streak if metrics else 0} days."
 
-    tz_offset = req.tz_offset or 0
-
     pending_formatted = []
     for t in pending_tasks:
-        dt = t.created_at.replace(tzinfo=None) - timedelta(minutes=tz_offset) if t.created_at else None
-        dt_str = dt.strftime('%Y-%m-%d %I:%M %p') if dt else 'Unknown'
+        dt_str = t.created_at.strftime('%Y-%m-%d %I:%M %p') if t.created_at else 'Unknown'
         pending_formatted.append(f"- {t.title} (Priority: {t.priority}, Created: {dt_str})")
 
     completed_formatted = []
     for t in completed_tasks:
-        # Created Time
-        c_dt = t.created_at.replace(tzinfo=None) - timedelta(minutes=tz_offset) if t.created_at else None
-        c_dt_str = c_dt.strftime('%Y-%m-%d %I:%M %p') if c_dt else 'Unknown'
-        
-        # Completed Time
-        dt = t.completed_at.replace(tzinfo=None) - timedelta(minutes=tz_offset) if t.completed_at else None
-        dt_str = dt.strftime('%Y-%m-%d %I:%M %p') if dt else 'Unknown'
+        c_dt_str = t.created_at.strftime('%Y-%m-%d %I:%M %p') if t.created_at else 'Unknown'
+        dt_str = t.completed_at.strftime('%Y-%m-%d %I:%M %p') if t.completed_at else 'Unknown'
         
         completed_formatted.append(f"- {t.title} (Created: {c_dt_str}, Completed: {dt_str})")
 

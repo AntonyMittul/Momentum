@@ -1,10 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from database import get_db
 import models, schemas
 from sqlalchemy import cast, Date
+
+def get_ist_now():
+    return datetime.utcnow() + timedelta(hours=5, minutes=30)
 
 router = APIRouter()
 
@@ -33,7 +36,7 @@ def update_task(task_id: int, task: schemas.TaskUpdate, db: Session = Depends(ge
     
     # Handle completion logic
     if "status" in update_data and update_data["status"] == "Completed" and db_task.status != "Completed":
-        db_task.completed_at = update_data.get("completed_at") or datetime.utcnow()
+        db_task.completed_at = get_ist_now()
     elif "status" in update_data and update_data["status"] != "Completed":
         db_task.completed_at = None
 

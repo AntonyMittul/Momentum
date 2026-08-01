@@ -1,16 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import date
+from datetime import datetime, date, timedelta
 from database import get_db
 import models, schemas
+
+def get_ist_date():
+    return (datetime.utcnow() + timedelta(hours=5, minutes=30)).date()
 
 router = APIRouter()
 
 @router.get("/", response_model=List[schemas.NonNegotiable])
 def get_non_negotiables(target_date: date = None, db: Session = Depends(get_db)):
     if target_date is None:
-        target_date = date.today()
+        target_date = get_ist_date()
         
     items = db.query(models.NonNegotiable).all()
     results = []
@@ -76,7 +79,7 @@ def toggle_non_negotiable(nn_id: int, log_data: schemas.NonNegotiableLogCreate, 
     if not db_item:
         raise HTTPException(status_code=404, detail="Not found")
         
-    target_date = log_data.date or date.today()
+    target_date = log_data.date or get_ist_date()
     
     log = db.query(models.NonNegotiableLog).filter(
         models.NonNegotiableLog.non_negotiable_id == nn_id,

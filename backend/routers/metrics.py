@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import date, timedelta, datetime
+from datetime import date, datetime, timedelta
 from database import get_db
+
+def get_ist_date():
+    return (datetime.utcnow() + timedelta(hours=5, minutes=30)).date()
 import models, schemas
 from pydantic import BaseModel
 
@@ -16,14 +19,10 @@ def read_metrics(skip: int = 0, limit: int = 30, db: Session = Depends(get_db)):
     metrics = db.query(models.DailyMetrics).order_by(models.DailyMetrics.date.desc()).offset(skip).limit(limit).all()
     return metrics
 
-@router.post("/calculate")
+@router.post("/calculate", response_model=schemas.DailyMetrics)
 def calculate_metrics_for_today(req: CalculateRequest, db: Session = Depends(get_db)):
-    # Calculate today's local date based on tz_offset
-    # tz_offset is the JS getTimezoneOffset() (minutes to add to local to get UTC).
-    # So local_time = utc_time - tz_offset
-    now_utc = datetime.utcnow()
-    local_now = now_utc - timedelta(minutes=req.tz_offset)
-    today = local_now.date()
+    # Use IST natively
+    today = get_ist_date()
     
     # Find today's metrics or create
     metrics = db.query(models.DailyMetrics).filter(models.DailyMetrics.date == today).first()
@@ -40,14 +39,14 @@ def calculate_metrics_for_today(req: CalculateRequest, db: Session = Depends(get
     # Actually, simpler: all tasks not completed before today.
     # But let's just count all completed today vs all tasks that are due or created today.
     
-    tasks = db.query(models.Task).all()
+    all_tasks = db.query(models.Task).all()
     
     # To perfectly align with the dashboard, "tasks today" are strictly the tasks created today in local time.
     tasks_today = []
-    for t in tasks:
-        if t.created_at:
-            t_local = t.created_at - timedelta(minutes=req.tz_offset)
-            if t_local.date() == today:
+    if all_tasks:
+        for t in all_tasks:
+            # t.created_at is already in IST
+            if t.created_at and t.created_at.date() == today:
                 tasks_today.append(t)
     
     completed_today = [t for t in tasks_today if t.status == "Completed"]
