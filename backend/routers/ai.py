@@ -94,9 +94,9 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     # 2. Gather context
     today = date.today()
     
-    # Get all pending tasks and the most recently completed 30 tasks for memory
+    # Get all pending tasks and the most recently completed 100 tasks for memory (BPT analysis)
     pending_tasks = db.query(models.Task).filter(models.Task.status == 'Pending').all()
-    completed_tasks = db.query(models.Task).filter(models.Task.status == 'Completed').order_by(models.Task.completed_at.desc()).limit(30).all()
+    completed_tasks = db.query(models.Task).filter(models.Task.status == 'Completed').order_by(models.Task.completed_at.desc()).limit(100).all()
     
     non_negotiables = db.query(models.NonNegotiable).all()
     nn_logs = db.query(models.NonNegotiableLog).filter(models.NonNegotiableLog.date == today).all()
@@ -111,7 +111,7 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     metrics_summary = f"Consistency Score: {metrics.consistency_score if metrics else 0}/100, Current Streak: {metrics.streak if metrics else 0} days."
 
     tasks_summary = "Pending Tasks:\n" + "\n".join([f"- {t.title} (Priority: {t.priority}, Created: {t.created_at.strftime('%Y-%m-%d')})" for t in pending_tasks])
-    tasks_summary += "\nCompleted Tasks (Last 30):\n" + "\n".join([f"- {t.title} (Completed: {t.completed_at.strftime('%Y-%m-%d') if t.completed_at else 'Unknown'})" for t in completed_tasks])
+    tasks_summary += "\nCompleted Tasks (Last 100):\n" + "\n".join([f"- {t.title} (Completed: {t.completed_at.strftime('%Y-%m-%d %I:%M %p') if t.completed_at else 'Unknown'})" for t in completed_tasks])
     
     goals = db.query(models.Goal).all()
     weekly_goals = [g for g in goals if g.type == "weekly" and g.status != "Completed"]
@@ -120,8 +120,12 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     goals_summary = "Weekly Goals (Pending/Ongoing):\n" + "\n".join([f"- {g.title} ({g.status})" for g in weekly_goals])
     goals_summary += "\nMonthly Goals (Pending/Ongoing):\n" + "\n".join([f"- {g.title} ({g.status})" for g in monthly_goals])
     
+    current_time_str = req.local_time or datetime.now().strftime("%Y-%m-%d %I:%M %p")
+
     context = f"""
-    Current Context for Today ({today}):
+    Current Local Date & Time for User: {current_time_str}
+    
+    Current Context:
     {metrics_summary}
 
     Non-Negotiable Habits:
@@ -138,10 +142,15 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     
     # 4. Construct Prompt
     system_prompt = f"""
-    You are an expert ADHD specialist and a supportive, positive friend to the user.
+    You are an expert ADHD specialist, productivity coach, and a supportive, positive friend to the user.
     You must use very informal, casual English (no textbook or rigid formatting).
     Your goal is to help the user manage their ADHD, stay on top of their tasks, and offer highly practical, bite-sized recommendations.
     Always treat them like a friend. Be empathetic, encouraging, and understanding of executive dysfunction.
+    
+    IMPORTANT: BIOLOGICAL PRIME TIME (BPT) TRACKING
+    You have access to the exact local times the user completes their tasks (see Completed Tasks). 
+    Use this data to identify their Biological Prime Time—the hours when they are most focused and productive.
+    When asked about their BPT or schedule, analyze these timestamps to point out their peak performance windows (e.g., "I notice you smash out most of your heavy tasks between 10 AM and 12 PM"). Recommend scheduling hard tasks during these observed peak hours.
     
     Here is their live data for today from their Momentum app:
     {context}

@@ -173,11 +173,11 @@ export async function fetchChatHistory() {
   return res.json();
 }
 
-export async function sendChatMessage(message: string) {
+export async function sendChatMessage(message: string, localTime?: string) {
   const res = await fetch(`${API_BASE_URL}/api/ai/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, local_time: localTime || new Date().toLocaleString() }),
   });
   if (!res.ok) throw new Error("Failed to send message");
   return res.json();

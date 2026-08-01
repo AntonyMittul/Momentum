@@ -11,23 +11,36 @@ export default function TaskCard({ task, onTaskUpdate }: { task: any, onTaskUpda
   const [completed, setCompleted] = useState(task.status === "Completed");
   const [isFading, setIsFading] = useState(false);
 
+  const getLocalIsoString = () => {
+    const d = new Date();
+    const tzo = -d.getTimezoneOffset();
+    const dif = tzo >= 0 ? '+' : '-';
+    const pad = (num: number) => (num < 10 ? '0' : '') + num;
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + 
+           pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + 
+           dif + pad(Math.floor(Math.abs(tzo) / 60)) + ':' + pad(Math.abs(tzo) % 60);
+  };
+
   const handleCheck = async (checked: boolean) => {
     setCompleted(checked);
     if (checked) setIsFading(true);
+    
+    const completedAt = checked ? getLocalIsoString() : null;
+    
     // Optimistic Update Callback
     if (onTaskUpdate) {
-      onTaskUpdate({ ...task, status: checked ? "Completed" : "Pending" }, 'update');
+      onTaskUpdate({ ...task, status: checked ? "Completed" : "Pending", completed_at: completedAt }, 'update');
     }
 
     // API Call
     try {
-      await updateTask(task.id, { status: checked ? "Completed" : "Pending" });
+      await updateTask(task.id, { status: checked ? "Completed" : "Pending", completed_at: completedAt });
     } catch (e) {
       console.error(e);
       setCompleted(!checked);
       setIsFading(false);
       if (onTaskUpdate) {
-        onTaskUpdate({ ...task, status: !checked ? "Completed" : "Pending" }, 'update');
+        onTaskUpdate({ ...task, status: !checked ? "Completed" : "Pending", completed_at: task.completed_at }, 'update');
       }
     }
   };

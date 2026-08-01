@@ -33,7 +33,7 @@ def update_task(task_id: int, task: schemas.TaskUpdate, db: Session = Depends(ge
     
     # Handle completion logic
     if "status" in update_data and update_data["status"] == "Completed" and db_task.status != "Completed":
-        db_task.completed_at = datetime.utcnow()
+        db_task.completed_at = update_data.get("completed_at") or datetime.utcnow()
     elif "status" in update_data and update_data["status"] != "Completed":
         db_task.completed_at = None
 

@@ -21,6 +21,7 @@ class TaskUpdate(BaseModel):
     estimated_duration: Optional[int] = None
     deadline: Optional[datetime] = None
     status: Optional[str] = None
+    completed_at: Optional[datetime] = None
 
 class Task(TaskBase):
     id: int
@@ -96,6 +97,7 @@ class Note(NoteBase):
 
 class ChatMessageCreate(BaseModel):
     message: str
+    local_time: Optional[str] = None
 
 class ChatMessage(BaseModel):
     id: int
