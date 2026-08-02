@@ -27,8 +27,18 @@ class PDF(FPDF):
 @router.get("/weekly")
 def get_weekly_report(db: Session = Depends(get_db)):
     today = get_ist_date()
-    # Find the Monday of the current week (0 = Monday, 6 = Sunday)
-    start_of_week = today - timedelta(days=today.weekday())
+    
+    # Python weekday(): Monday=0, Sunday=6
+    # Calculate days since the most recent Sunday
+    days_since_sunday = (today.weekday() + 1) % 7
+    
+    if days_since_sunday == 0:
+        # If today is Sunday, generate report for the PREVIOUS week (Sunday to Saturday)
+        start_of_week = today - timedelta(days=7)
+    else:
+        # If today is Mon-Sat, generate report for the CURRENT week (Sunday to Saturday)
+        start_of_week = today - timedelta(days=days_since_sunday)
+        
     end_of_week = start_of_week + timedelta(days=6)
     
     # Fetch Data for the week
