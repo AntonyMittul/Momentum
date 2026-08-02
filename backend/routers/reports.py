@@ -160,9 +160,6 @@ def get_weekly_report(db: Session = Depends(get_db)):
             
             **One Focus For Next Week**
             (Provide ONE clear, actionable recommendation.)
-            
-            **Closing Note**
-            (One single encouraging sentence.)
             """
             
             response = client.models.generate_content(
