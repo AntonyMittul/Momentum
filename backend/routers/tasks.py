@@ -11,6 +11,55 @@ def get_ist_now():
 
 router = APIRouter()
 
+@router.get("/migrate-timezones")
+def migrate_timezones(db: Session = Depends(get_db)):
+    # Idempotency check using a dummy goal
+    migration_check = db.query(models.Goal).filter(models.Goal.title == "SYSTEM_UTC_IST_MIGRATION").first()
+    if migration_check:
+        return {"message": "Migration already completed previously. No action taken."}
+        
+    cutoff = datetime(2026, 8, 2, 20, 0, 0)
+    
+    # 1. Tasks
+    tasks = db.query(models.Task).all()
+    for t in tasks:
+        if t.created_at and t.created_at < cutoff:
+            t.created_at = t.created_at + timedelta(hours=5, minutes=30)
+            if t.completed_at:
+                t.completed_at = t.completed_at + timedelta(hours=5, minutes=30)
+                
+    # 2. Goals
+    goals = db.query(models.Goal).filter(models.Goal.title != "SYSTEM_UTC_IST_MIGRATION").all()
+    for g in goals:
+        if g.created_at and g.created_at < cutoff:
+            g.created_at = g.created_at + timedelta(hours=5, minutes=30)
+            if g.completed_at:
+                g.completed_at = g.completed_at + timedelta(hours=5, minutes=30)
+                
+    # 3. NonNegotiables
+    nns = db.query(models.NonNegotiable).all()
+    for nn in nns:
+        if nn.created_at and nn.created_at < cutoff:
+            nn.created_at = nn.created_at + timedelta(hours=5, minutes=30)
+            
+    # 4. Notes
+    notes = db.query(models.Note).all()
+    for n in notes:
+        if n.created_at and n.created_at < cutoff:
+            n.created_at = n.created_at + timedelta(hours=5, minutes=30)
+            
+    # 5. ChatHistory
+    chats = db.query(models.ChatHistory).all()
+    for c in chats:
+        if c.created_at and c.created_at < cutoff:
+            c.created_at = c.created_at + timedelta(hours=5, minutes=30)
+            
+    # Mark migration as complete
+    db.add(models.Goal(title="SYSTEM_UTC_IST_MIGRATION", type="weekly", status="Completed"))
+    db.commit()
+    
+    return {"message": "Successfully migrated all historical UTC timestamps to IST!"}
+
 @router.post("/", response_model=schemas.Task)
 def create_task(task: schemas.TaskCreate, db: Session = Depends(get_db)):
     db_task = models.Task(**task.model_dump())
