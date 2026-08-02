@@ -158,9 +158,6 @@ def get_weekly_report(db: Session = Depends(get_db)):
             **Habit Consistency**
             (Describe patterns in habits, e.g., "You exercised every day except Tuesday".)
             
-            **AI Observation**
-            (Generate ONE meaningful observation based on the timestamps or patterns above, identifying their Biological Prime Time or behavioral habits. If not enough data, omit this section.)
-            
             **One Focus For Next Week**
             (Provide ONE clear, actionable recommendation.)
             
