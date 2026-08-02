@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 from datetime import date, datetime, timedelta
+from collections import Counter
 from google import genai
 import os
 from database import get_db
@@ -50,7 +51,36 @@ def get_weekly_report(db: Session = Depends(get_db)):
     completed_tasks = [t for t in tasks_this_week if t.status == 'Completed']
     pending_tasks = [t for t in tasks_this_week if t.status != 'Completed']
     
-    # Fetch non-negotiables stats
+    # 1. Advanced Metrics Calculation
+    completion_rate = round((len(completed_tasks) / len(tasks_this_week) * 100)) if tasks_this_week else 0
+    
+    day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    completed_days = [t.completed_at.weekday() for t in completed_tasks if t.completed_at]
+    best_day = day_names[Counter(completed_days).most_common(1)[0][0]] if completed_days else "N/A"
+    
+    categories = [t.category for t in completed_tasks if t.category]
+    best_category = Counter(categories).most_common(1)[0][0] if categories else "N/A"
+    
+    metrics = db.query(models.DailyMetrics).filter(models.DailyMetrics.date <= end_of_week).order_by(models.DailyMetrics.date.desc()).first()
+    consistency_score = metrics.consistency_score if metrics else 0
+    current_streak = metrics.streak if metrics else 0
+    longest_streak = metrics.longest_streak if metrics else 0
+
+    # 2. Previous Week Data
+    prev_start = start_of_week - timedelta(days=7)
+    prev_end = end_of_week - timedelta(days=7)
+    prev_tasks = db.query(models.Task).filter(
+        models.Task.created_at >= prev_start,
+        models.Task.created_at <= prev_end + timedelta(days=1)
+    ).all()
+    prev_completed = len([t for t in prev_tasks if t.status == 'Completed'])
+    prev_total = len(prev_tasks)
+    prev_rate = round((prev_completed / prev_total * 100)) if prev_total > 0 else 0
+    
+    prev_metrics = db.query(models.DailyMetrics).filter(models.DailyMetrics.date <= prev_end).order_by(models.DailyMetrics.date.desc()).first()
+    prev_streak = prev_metrics.streak if prev_metrics else 0
+    
+    # 3. Habit Specifics
     non_negotiables = db.query(models.NonNegotiable).all()
     nn_logs = db.query(models.NonNegotiableLog).filter(
         models.NonNegotiableLog.date >= start_of_week,
@@ -58,13 +88,15 @@ def get_weekly_report(db: Session = Depends(get_db)):
         models.NonNegotiableLog.completed == True
     ).all()
     
-    # Prepare summary text for Gemini
     nn_summary = []
     for nn in non_negotiables:
-        logs_for_nn = len([l for l in nn_logs if l.non_negotiable_id == nn.id])
-        nn_summary.append(f"- {nn.title}: Completed {logs_for_nn} times this week.")
+        logs_for_nn = [l for l in nn_logs if l.non_negotiable_id == nn.id]
+        completed_days_str = ", ".join([day_names[l.date.weekday()] for l in logs_for_nn])
+        nn_summary.append(f"- {nn.title}: Completed {len(logs_for_nn)}/7 days. (Days done: {completed_days_str if completed_days_str else 'None'})")
         
-    tasks_summary = f"Total Tasks Created: {len(tasks_this_week)}\nTotal Completed: {len(completed_tasks)}\nPending: {len(pending_tasks)}"
+    # 4. Task Specifics
+    completed_task_titles = [f"- {t.title} (Cat: {t.category}, Completed: {t.completed_at.strftime('%A %I:%M %p')})" for t in completed_tasks if t.completed_at]
+    pending_task_titles = [f"- {t.title} (Cat: {t.category})" for t in pending_tasks]
     
     # Call Gemini
     api_key = os.getenv("GEMINI_API_KEY")
@@ -74,30 +106,66 @@ def get_weekly_report(db: Session = Depends(get_db)):
         try:
             client = genai.Client(api_key=api_key)
             prompt = f"""
-            You are a calm, minimalist productivity coach for a single user.
-            Write a supportive and reflective weekly review report.
-            The user relies on you to review their week and keep them motivated without toxic positivity.
+            You are a calm, minimalist, highly observant productivity coach writing a personal Weekly Report for a user.
+            You must analyze the following raw data and write a highly structured, insightful, and premium report.
             
-            Week: {start_of_week.strftime('%B %d, %Y')} to {end_of_week.strftime('%B %d, %Y')}
+            Never exaggerate. Never use toxic positivity (Do NOT use words like Amazing, Outstanding, Incredible, Perfect, Phenomenal).
+            Use calm, professional words (e.g. Consistent, Steady, Meaningful, Balanced, Reliable, Sustainable, Calm, Disciplined).
+            Always acknowledge reality and explain WHY the numbers matter instead of just repeating them.
             
-            Task Stats:
-            {tasks_summary}
+            [DATA SECTION]
+            CURRENT WEEK: {start_of_week.strftime('%B %d, %Y')} to {end_of_week.strftime('%B %d, %Y')}
+            Completion Rate: {completion_rate}%
+            Tasks Completed: {len(completed_tasks)} / {len(tasks_this_week)}
+            Consistency Score: {consistency_score}/100
+            Current Streak: {current_streak} Days
+            Longest Streak: {longest_streak} Days
+            Best Day: {best_day}
+            Most Productive Category: {best_category}
             
-            Non-Negotiables (Daily Habits) Progress:
+            PREVIOUS WEEK COMPARISON:
+            Completion Rate: {prev_rate}%
+            Tasks Completed: {prev_completed} / {prev_total}
+            Previous Streak: {prev_streak} Days
+            
+            SPECIFIC COMPLETED TASKS (With timestamps for BPT observation):
+            {chr(10).join(completed_task_titles) if completed_task_titles else "None"}
+            
+            SPECIFIC PENDING TASKS:
+            {chr(10).join(pending_task_titles) if pending_task_titles else "None"}
+            
+            NON-NEGOTIABLES (Habits):
             {chr(10).join(nn_summary)}
             
-            Please write a well-structured report with the following sections (Keep it under 350 words):
-            **Weekly Reflection**
-            **Task Highlights**
-            **Habit Consistency**
-            **Looking Ahead**
+            [OUTPUT STRUCTURE]
+            You MUST follow this exact structure in your response. Do not include the date. Start directly with the first section heading. Do NOT add empty lines between a heading and its bullet points.
             
-            FORMATTING RULES:
-            - Do not include the date or any title heading at the beginning. Start directly with the first section heading.
-            - Do NOT add empty lines between a heading and its bullet points.
-            - Use bullet points instead of paragraphs for the content inside each section to make it easy to read.
-            - Bold all the important metrics and numbers in the text (e.g., **13 out of 23 tasks**, **6 days**).
-            - Use standard markdown bold formatting: **Text**
+            **Week at a Glance**
+            - Completion Rate: {completion_rate}%
+            - Tasks Completed: {len(completed_tasks)} / {len(tasks_this_week)}
+            - Consistency Score: {consistency_score}
+            - Current Streak: {current_streak} Days
+            - Longest Streak: {longest_streak} Days
+            - Best Day: {best_day}
+            - Most Productive Category: {best_category}
+            
+            **Weekly Reflection**
+            (3-5 sentences. Compare with last week if data allows. Make it feel human and reflective.)
+            
+            **Task Highlights**
+            (Mention specific completed/pending tasks by name. Do not just say "you did 19 tasks".)
+            
+            **Habit Consistency**
+            (Describe patterns in habits, e.g., "You exercised every day except Tuesday".)
+            
+            **AI Observation**
+            (Generate ONE meaningful observation based on the timestamps or patterns above, identifying their Biological Prime Time or behavioral habits. If not enough data, omit this section.)
+            
+            **One Focus For Next Week**
+            (Provide ONE clear, actionable recommendation.)
+            
+            **Closing Note**
+            (One single encouraging sentence.)
             """
             
             response = client.models.generate_content(
