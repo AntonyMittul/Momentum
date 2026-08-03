@@ -22,7 +22,6 @@ export default function CreateTaskModal({ onTaskCreated }: { onTaskCreated?: (ta
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Other");
   const [priority, setPriority] = useState("Medium");
-  const [duration, setDuration] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,14 +36,13 @@ export default function CreateTaskModal({ onTaskCreated }: { onTaskCreated?: (ta
         description: description || null,
         category,
         priority,
-        estimated_duration: duration ? parseInt(duration) : null,
+        estimated_duration: null,
       });
       
       setTitle("");
       setDescription("");
       setCategory("Other");
       setPriority("Medium");
-      setDuration("");
       setOpen(false);
       if (onTaskCreated) onTaskCreated(createdTask);
     } catch (error: any) {
@@ -87,30 +85,17 @@ export default function CreateTaskModal({ onTaskCreated }: { onTaskCreated?: (ta
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Priority</Label>
-              <select 
-                value={priority}
-                onChange={e => setPriority(e.target.value)}
-                className="w-full border-b border-border bg-transparent py-2 text-sm focus:outline-none focus:border-foreground"
-              >
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Duration (Mins)</Label>
-              <Input 
-                type="number"
-                value={duration}
-                onChange={e => setDuration(e.target.value)}
-                className="border-b border-border border-x-0 border-t-0 rounded-none px-0 focus-visible:ring-0 focus-visible:border-foreground shadow-none" 
-                placeholder="30"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Priority</Label>
+            <select 
+              value={priority}
+              onChange={e => setPriority(e.target.value)}
+              className="w-full border-b border-border bg-transparent py-2 text-sm focus:outline-none focus:border-foreground"
+            >
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
           </div>
 
           <div className="space-y-2">
