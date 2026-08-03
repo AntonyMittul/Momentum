@@ -115,15 +115,11 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
 
     pending_formatted = []
     for t in pending_tasks:
-        dt_str = t.created_at.strftime('%Y-%m-%d %I:%M %p') if t.created_at else 'Unknown'
-        pending_formatted.append(f"- {t.title} (Priority: {t.priority}, Created: {dt_str})")
+        pending_formatted.append(f"- {t.title} (Priority: {t.priority})")
 
     completed_formatted = []
     for t in completed_tasks:
-        c_dt_str = t.created_at.strftime('%Y-%m-%d %I:%M %p') if t.created_at else 'Unknown'
-        dt_str = t.completed_at.strftime('%Y-%m-%d %I:%M %p') if t.completed_at else 'Unknown'
-        
-        completed_formatted.append(f"- {t.title} (Created: {c_dt_str}, Completed: {dt_str})")
+        completed_formatted.append(f"- {t.title}")
 
     tasks_summary = "Pending Tasks:\n" + "\n".join(pending_formatted)
     tasks_summary += "\nCompleted Tasks (Last 100):\n" + "\n".join(completed_formatted)
@@ -161,11 +157,6 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     You must use very informal, casual English (no textbook or rigid formatting).
     Your goal is to help the user manage their ADHD, stay on top of their tasks, and offer highly practical, bite-sized recommendations.
     Always treat them like a friend. Be empathetic, encouraging, and understanding of executive dysfunction.
-    
-    IMPORTANT: BIOLOGICAL PRIME TIME (BPT) TRACKING
-    You have access to the exact local times the user completes their tasks (see Completed Tasks). 
-    Use this data to identify their Biological Prime Time—the hours when they are most focused and productive.
-    When asked about their BPT or schedule, analyze these timestamps to point out their peak performance windows (e.g., "I notice you smash out most of your heavy tasks between 10 AM and 12 PM"). Recommend scheduling hard tasks during these observed peak hours.
     
     Here is their live data for today from their Momentum app:
     {context}
