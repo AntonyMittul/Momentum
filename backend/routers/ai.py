@@ -115,11 +115,14 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
 
     pending_formatted = []
     for t in pending_tasks:
-        pending_formatted.append(f"- {t.title} (Priority: {t.priority})")
+        dt_str = t.created_at.strftime('%Y-%m-%d') if t.created_at else 'Unknown'
+        pending_formatted.append(f"- {t.title} (Priority: {t.priority}, Created: {dt_str})")
 
     completed_formatted = []
     for t in completed_tasks:
-        completed_formatted.append(f"- {t.title}")
+        c_dt_str = t.created_at.strftime('%Y-%m-%d') if t.created_at else 'Unknown'
+        dt_str = t.completed_at.strftime('%Y-%m-%d') if t.completed_at else 'Unknown'
+        completed_formatted.append(f"- {t.title} (Created: {c_dt_str}, Completed: {dt_str})")
 
     tasks_summary = "Pending Tasks:\n" + "\n".join(pending_formatted)
     tasks_summary += "\nCompleted Tasks (Last 100):\n" + "\n".join(completed_formatted)
