@@ -97,57 +97,62 @@ def send_chat_message(req: schemas.ChatMessageCreate, db: Session = Depends(get_
     # 2. Gather context
     today = get_ist_date()
     
-    # Get all pending tasks and the most recently completed 100 tasks for memory (BPT analysis)
-    pending_tasks = db.query(models.Task).filter(models.Task.status == 'Pending').all()
-    completed_tasks = db.query(models.Task).filter(models.Task.status == 'Completed').order_by(models.Task.completed_at.desc()).limit(100).all()
+    all_tasks = db.query(models.Task).all()
+    
+    completed_today = [t for t in all_tasks if t.status == 'Completed' and t.completed_at and t.completed_at.date() == today]
+    pending_created_today = [t for t in all_tasks if t.status != 'Completed' and t.created_at and t.created_at.date() == today]
+    pending_backlog = [t for t in all_tasks if t.status != 'Completed' and t.created_at and t.created_at.date() != today]
+    
+    tasks_context = "--- TASKS ---\n"
+    tasks_context += "Created Today (Still Pending):\n"
+    if pending_created_today:
+        for t in pending_created_today:
+            tasks_context += f"- {t.title} (Priority: {t.priority})\n"
+    else:
+        tasks_context += "None\n"
+        
+    tasks_context += "\nCompleted Today:\n"
+    if completed_today:
+        for t in completed_today:
+            tasks_context += f"- {t.title}\n"
+    else:
+        tasks_context += "None\n"
+        
+    tasks_context += "\nBacklog (Pending tasks from previous days):\n"
+    if pending_backlog:
+        for t in pending_backlog:
+            tasks_context += f"- {t.title} (Priority: {t.priority})\n"
+    else:
+        tasks_context += "None\n"
     
     non_negotiables = db.query(models.NonNegotiable).all()
     nn_logs = db.query(models.NonNegotiableLog).filter(models.NonNegotiableLog.date == today).all()
     
-    nn_status = []
+    nn_status = "--- NON-NEGOTIABLE HABITS FOR TODAY ---\n"
     for nn in non_negotiables:
         log = next((l for l in nn_logs if l.non_negotiable_id == nn.id), None)
-        status = "Completed" if log and log.completed else "Pending"
-        nn_status.append(f"{nn.title}: {status}")
+        status = "Completed" if log and log.completed else "Not Completed"
+        nn_status += f"- {nn.title}: {status}\n"
 
     metrics = db.query(models.DailyMetrics).order_by(models.DailyMetrics.date.desc()).first()
-    metrics_summary = f"Consistency Score: {metrics.consistency_score if metrics else 0}/100, Current Streak: {metrics.streak if metrics else 0} days."
-
-    pending_formatted = []
-    for t in pending_tasks:
-        dt_str = t.created_at.strftime('%Y-%m-%d') if t.created_at else 'Unknown'
-        pending_formatted.append(f"- {t.title} (Priority: {t.priority}, Created: {dt_str})")
-
-    completed_formatted = []
-    for t in completed_tasks:
-        c_dt_str = t.created_at.strftime('%Y-%m-%d') if t.created_at else 'Unknown'
-        dt_str = t.completed_at.strftime('%Y-%m-%d') if t.completed_at else 'Unknown'
-        completed_formatted.append(f"- {t.title} (Created: {c_dt_str}, Completed: {dt_str})")
-
-    tasks_summary = "Pending Tasks:\n" + "\n".join(pending_formatted)
-    tasks_summary += "\nCompleted Tasks (Last 100):\n" + "\n".join(completed_formatted)
+    metrics_summary = f"--- INSIGHTS ---\nConsistency Score: {metrics.consistency_score if metrics else 0}/100\nCurrent Streak: {metrics.streak if metrics else 0} days\n"
     
     goals = db.query(models.Goal).all()
     weekly_goals = [g for g in goals if g.type == "weekly" and g.status != "Completed"]
     monthly_goals = [g for g in goals if g.type == "monthly" and g.status != "Completed"]
     
-    goals_summary = "Weekly Goals (Pending/Ongoing):\n" + "\n".join([f"- {g.title} ({g.status})" for g in weekly_goals])
-    goals_summary += "\nMonthly Goals (Pending/Ongoing):\n" + "\n".join([f"- {g.title} ({g.status})" for g in monthly_goals])
+    goals_summary = "--- GOALS ---\nWeekly Goals (Pending/Ongoing):\n" + ("\n".join([f"- {g.title} ({g.status})" for g in weekly_goals]) if weekly_goals else "None")
+    goals_summary += "\nMonthly Goals (Pending/Ongoing):\n" + ("\n".join([f"- {g.title} ({g.status})" for g in monthly_goals]) if monthly_goals else "None")
     
     current_time_str = req.local_time or datetime.now().strftime("%Y-%m-%d %I:%M %p")
 
     context = f"""
     Current Local Date & Time for User: {current_time_str}
     
-    Current Context:
     {metrics_summary}
-
-    Non-Negotiable Habits:
-    {chr(10).join(nn_status)}
-
+    {nn_status}
+    {tasks_context}
     {goals_summary}
-
-    {tasks_summary}
     """
 
     # 3. Retrieve recent history for context (only today's chat)
