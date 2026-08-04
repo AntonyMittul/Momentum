@@ -117,6 +117,7 @@ export default function Dashboard() {
   };
 
   const [currentDate, setCurrentDate] = useState("");
+  const [greeting, setGreeting] = useState("");
 
   const getFormattedDate = () => {
     const date = new Date();
@@ -151,23 +152,48 @@ export default function Dashboard() {
     const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
     setDailyMessage(motivationalMessages[dayOfYear % motivationalMessages.length]);
     
+    // Set dynamic greeting
+    const getDynamicGreeting = () => {
+      const hour = new Date().getHours();
+      let options = [];
+      if (hour < 12) {
+        options = [
+          "Good Morning, Antony.", 
+          "Morning, Antony.", 
+          "Ready to crush it, Antony?", 
+          "Let's get to work, Antony.",
+          "A fresh start, Antony."
+        ];
+      } else if (hour < 18) {
+        options = [
+          "Good Afternoon, Antony.", 
+          "Antony Returns.", 
+          "Keep the momentum, Antony.", 
+          "Halfway there, Antony.", 
+          "Stay focused, Antony."
+        ];
+      } else {
+        options = [
+          "Good Evening, Antony.", 
+          "Winding down, Antony?", 
+          "Great work today, Antony.", 
+          "Evening, Antony.", 
+          "Time to recharge, Antony."
+        ];
+      }
+      return options[Math.floor(Math.random() * options.length)];
+    };
+    
+    setGreeting(getDynamicGreeting());
+    
     return () => clearInterval(interval);
   }, []);
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning.";
-    if (hour < 18) return "Good Afternoon.";
-    return "Good Evening.";
-  };
-
-  return (
-    <div className="space-y-16 pb-24">
       {/* Header Section */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-            {getGreeting()}
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground transition-opacity duration-500">
+            {greeting || "Welcome back."}
           </h1>
           <p className="text-muted-foreground text-lg font-medium tracking-wide">
             {currentDate}
