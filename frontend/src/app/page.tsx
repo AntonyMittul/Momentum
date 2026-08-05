@@ -189,6 +189,8 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  return (
+    <div className="space-y-16 pb-24">
       {/* Header Section */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="space-y-2">
