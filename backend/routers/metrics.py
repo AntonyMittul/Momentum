@@ -22,7 +22,15 @@ def read_metrics(skip: int = 0, limit: int = 30, db: Session = Depends(get_db)):
 @router.get("/non-negotiables")
 def get_nn_metrics(db: Session = Depends(get_db)):
     today = get_ist_date()
+    
+    first_metric = db.query(models.DailyMetrics).order_by(models.DailyMetrics.date.asc()).first()
+    earliest_date = first_metric.date if first_metric else today
+    
     start_date = today - timedelta(days=29)
+    if start_date < earliest_date:
+        start_date = earliest_date
+        
+    num_days = (today - start_date).days + 1
     
     nns = db.query(models.NonNegotiable).all()
     if not nns:
@@ -32,7 +40,7 @@ def get_nn_metrics(db: Session = Depends(get_db)):
     logs = db.query(models.NonNegotiableLog).filter(models.NonNegotiableLog.date >= start_date).all()
     
     results = []
-    for i in range(30):
+    for i in range(num_days):
         d = start_date + timedelta(days=i)
         completed_on_day = sum(1 for log in logs if log.date == d and log.completed)
         score = (completed_on_day / total_nns) * 100 if total_nns > 0 else 0
