@@ -141,7 +141,7 @@ export default function InsightsPage() {
           </h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={nonNegotiables} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <LineChart data={nonNegotiables} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
@@ -169,16 +169,18 @@ export default function InsightsPage() {
                     }
                     return null;
                   }}
-                  cursor={{ fill: 'var(--muted)' }} 
+                  cursor={{ stroke: 'var(--border)' }} 
                 />
-                <Bar 
+                <Line 
+                  type="monotone" 
                   dataKey="completedDays" 
                   name="Days Followed"
-                  fill="currentColor" 
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={60}
+                  stroke="currentColor" 
+                  strokeWidth={2} 
+                  dot={false}
+                  activeDot={{ r: 4, fill: "currentColor" }}
                 />
-              </BarChart>
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </section>
