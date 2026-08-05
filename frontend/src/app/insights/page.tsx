@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMetrics, calculateMetrics, API_BASE_URL, fetchNonNegotiables } from "@/lib/api";
+import { getMetrics, calculateMetrics, API_BASE_URL, fetchNNMetrics } from "@/lib/api";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { format, subDays, parseISO } from "date-fns";
 
 export default function InsightsPage() {
   const [metrics, setMetrics] = useState<any[]>([]);
-  const [nonNegotiables, setNonNegotiables] = useState<any[]>([]);
+  const [nnMetrics, setNnMetrics] = useState<any[]>([]);
   const isSunday = new Date().getDay() === 0;
 
   const handleDownloadReport = () => {
@@ -23,15 +23,9 @@ export default function InsightsPage() {
         setMetrics(data.reverse());
       }
       
-      const tzOffset = new Date().getTimezoneOffset() * 60000;
-      const localISOTime = (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
-      const nnData = await fetchNonNegotiables(localISOTime);
+      const nnData = await fetchNNMetrics();
       if (nnData) {
-        const formattedNN = nnData.map((nn: any) => ({
-          name: nn.title,
-          completedDays: (nn.duration_days || 30) - nn.remaining_days,
-        }));
-        setNonNegotiables(formattedNN);
+        setNnMetrics(nnData.reverse());
       }
     }
     load();
@@ -133,37 +127,38 @@ export default function InsightsPage() {
         </div>
       </section>
 
-      {/* Section 1.5: Non-Negotiables Bar Chart */}
-      {nonNegotiables.length > 0 && (
+      {/* Section 1.5: Non-Negotiables Line Chart */}
+      {nnMetrics.length > 0 && (
         <section>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-6">
             Non-Negotiables Progress
           </h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={nonNegotiables} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <LineChart data={nnMetrics}>
                 <XAxis 
-                  dataKey="name" 
+                  dataKey="date" 
                   axisLine={false} 
                   tickLine={false} 
+                  tickFormatter={(val) => format(parseISO(val), "MMM d")}
                   tick={{ fontSize: 12, fill: '#888' }}
                   dy={10}
                 />
                 <YAxis 
-                  allowDecimals={false}
+                  domain={[0, 100]} 
                   axisLine={false} 
                   tickLine={false} 
                   tick={{ fontSize: 12, fill: '#888' }}
                   dx={-10}
                 />
                 <Tooltip 
-                  content={({ active, payload, label }: any) => {
+                  content={({ active, payload }: any) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
                         <div className="bg-card border border-border p-3 text-sm text-foreground shadow-md transition-colors duration-500">
-                          <p className="font-bold mb-1">{data.name}</p>
-                          <p>Days Followed: <span className="font-semibold">{data.completedDays}</span></p>
+                          <p className="font-bold mb-1">{data.date}</p>
+                          <p>Consistency: <span className="font-semibold">{data.consistency_score}%</span></p>
                         </div>
                       );
                     }
@@ -173,8 +168,7 @@ export default function InsightsPage() {
                 />
                 <Line 
                   type="monotone" 
-                  dataKey="completedDays" 
-                  name="Days Followed"
+                  dataKey="consistency_score" 
                   stroke="currentColor" 
                   strokeWidth={2} 
                   dot={false}

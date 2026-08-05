@@ -19,6 +19,32 @@ def read_metrics(skip: int = 0, limit: int = 30, db: Session = Depends(get_db)):
     metrics = db.query(models.DailyMetrics).order_by(models.DailyMetrics.date.desc()).offset(skip).limit(limit).all()
     return metrics
 
+@router.get("/non-negotiables")
+def get_nn_metrics(db: Session = Depends(get_db)):
+    today = get_ist_date()
+    start_date = today - timedelta(days=29)
+    
+    nns = db.query(models.NonNegotiable).all()
+    if not nns:
+        return []
+        
+    total_nns = len(nns)
+    logs = db.query(models.NonNegotiableLog).filter(models.NonNegotiableLog.date >= start_date).all()
+    
+    results = []
+    for i in range(30):
+        d = start_date + timedelta(days=i)
+        completed_on_day = sum(1 for log in logs if log.date == d and log.completed)
+        score = (completed_on_day / total_nns) * 100 if total_nns > 0 else 0
+        
+        results.append({
+            "date": d.isoformat(),
+            "consistency_score": round(score, 1)
+        })
+        
+    results.reverse() # Newest first, to match read_metrics ordering
+    return results
+
 @router.post("/calculate", response_model=schemas.DailyMetrics)
 def calculate_metrics_for_today(req: CalculateRequest, db: Session = Depends(get_db)):
     # Use IST natively

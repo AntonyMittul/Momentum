@@ -139,6 +139,12 @@ export async function fetchNonNegotiables(targetDate?: string) {
   return res.json();
 }
 
+export async function fetchNNMetrics() {
+  const res = await fetch(`${API_BASE_URL}/api/metrics/non-negotiables`, { cache: 'no-store' });
+  if (!res.ok) return [];
+  return res.json();
+}
+
 export async function createNonNegotiable(data: any) {
   const res = await fetch(`${API_BASE_URL}/api/non-negotiables/`, {
     method: 'POST',
