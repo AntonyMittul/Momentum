@@ -12,5 +12,5 @@ jobs:
     steps:
       - name: Ping Backend API
         run: |
-          curl -s "https://momentum-aj3j.onrender.com/api/tasks/" > /dev/null
+          curl -m 30 -s "https://momentum-aj3j.onrender.com/api/tasks/" > /dev/null || true
           echo "Pinged backend to keep it awake!"
