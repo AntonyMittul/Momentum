@@ -181,8 +181,21 @@ def get_weekly_report(db: Session = Depends(get_db)):
     
     pdf.set_font("helvetica", size=11)
     
+    # Sanitize text for FPDF default font (latin-1)
+    def sanitize_for_latin1(text):
+        if not text:
+            return text
+        replacements = {
+            "’": "'", "‘": "'", "”": '"', "“": '"', "–": "-", "—": "-", "…": "..."
+        }
+        for k, v in replacements.items():
+            text = text.replace(k, v)
+        return text.encode('latin-1', 'ignore').decode('latin-1')
+
+    safe_report_text = sanitize_for_latin1(report_text)
+    
     # fpdf2 supports basic markdown with markdown=True, align='L' prevents weird word spacing
-    pdf.multi_cell(0, 7, report_text, markdown=True, align='L')
+    pdf.multi_cell(0, 7, safe_report_text, markdown=True, align='L')
     
     # Output returns bytearray in fpdf2
     pdf_bytes = pdf.output()
