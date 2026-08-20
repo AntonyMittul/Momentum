@@ -9,15 +9,15 @@ export default function LandingPage() {
   const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
-    // Start exit transition after 2.8 seconds so animations have time to play smoothly
+    // Start exit transition after 4.5 seconds so animations have time to play smoothly and sit for 2 seconds
     const exitTimer = setTimeout(() => {
       setIsExiting(true);
-    }, 2800);
+    }, 4500);
 
-    // Redirect to dashboard after 3.5 seconds
+    // Redirect to dashboard after 5.5 seconds
     const redirectTimer = setTimeout(() => {
       router.push("/dashboard");
-    }, 3500);
+    }, 5500);
 
     return () => {
       clearTimeout(exitTimer);
