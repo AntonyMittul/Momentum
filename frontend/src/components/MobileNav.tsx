@@ -11,7 +11,7 @@ export function MobileNav() {
   const closeMenu = () => setIsOpen(false);
 
   const links = [
-    { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/tasks", label: "Tasks", icon: CheckSquare },
     { href: "/non-negotiables", label: "Non-Negotiables", icon: ShieldCheck },
     { href: "/insights", label: "Insights", icon: LineChart },
