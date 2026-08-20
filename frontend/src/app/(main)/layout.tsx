@@ -1,30 +1,16 @@
-import type { Metadata } from "next";
-import { Inter, Geist } from "next/font/google";
 import "../globals.css";
 import Link from "next/link";
 import { LayoutDashboard, CheckSquare, LineChart, Palette, ShieldCheck, CalendarDays, StickyNote, Bot, Target } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { ThemeProvider } from "@/components/ThemeProvider";
 import { MobileNav } from "@/components/MobileNav";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-
-export const metadata: Metadata = {
-  title: "Momentum",
-  description: "A distraction-free AI productivity companion",
-};
-
-export default function RootLayout({
+export default function MainLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "antialiased", inter.variable, "font-sans", geist.variable)}>
-      <body className="h-[100dvh] overflow-hidden flex flex-col md:flex-row bg-background text-foreground font-sans transition-colors duration-500">
-        <ThemeProvider>
-          <MobileNav />
+    <div className="h-[100dvh] overflow-hidden flex flex-col md:flex-row">
+      <MobileNav />
           <aside className="w-64 border-r border-border flex flex-col p-6 hidden md:flex">
             <div className="mb-12 font-bold text-xl tracking-tight">Momentum</div>
             <nav className="flex-1 space-y-4 font-medium text-sm">
@@ -62,8 +48,6 @@ export default function RootLayout({
               {children}
             </div>
           </main>
-        </ThemeProvider>
-      </body>
-    </html>
+    </div>
   );
 }
