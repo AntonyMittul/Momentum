@@ -9,15 +9,15 @@ export default function LandingPage() {
   const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
-    // Start exit transition after 1.5 seconds
+    // Start exit transition after 2.8 seconds so animations have time to play smoothly
     const exitTimer = setTimeout(() => {
       setIsExiting(true);
-    }, 1500);
+    }, 2800);
 
-    // Redirect to dashboard after 2 seconds
+    // Redirect to dashboard after 3.5 seconds
     const redirectTimer = setTimeout(() => {
       router.push("/dashboard");
-    }, 2000);
+    }, 3500);
 
     return () => {
       clearTimeout(exitTimer);
@@ -38,7 +38,7 @@ export default function LandingPage() {
       className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-background"
       initial={{ opacity: 0 }}
       animate={{ opacity: isExiting ? 0 : 1 }}
-      transition={{ duration: 0.4, ease: "easeInOut" }}
+      transition={{ duration: 0.6, ease: "easeInOut" }}
     >
       {/* Background Animated Gradients / Glows */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -66,7 +66,7 @@ export default function LandingPage() {
       <motion.div 
         className="relative z-10 flex flex-col items-center"
         animate={isExiting ? { scale: 1.1, opacity: 0, filter: "blur(10px)" } : { scale: 1, opacity: 1, filter: "blur(0px)" }}
-        transition={{ duration: 0.4, ease: [0.76, 0, 0.24, 1] }}
+        transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
       >
         {/* Abstract Animated Logo */}
         <div className="relative w-48 h-48 mb-8 flex items-center justify-center perspective-1000">
@@ -75,7 +75,7 @@ export default function LandingPage() {
             className="absolute inset-0 bg-gradient-to-tr from-foreground/5 to-foreground/10 rounded-[32px] backdrop-blur-2xl border border-foreground/10 shadow-2xl"
             initial={{ scale: 0.5, rotateY: 90, opacity: 0 }}
             animate={{ scale: 1, rotateY: 0, opacity: 1 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           />
 
           {/* SVG Graph Animation */}
@@ -95,7 +95,7 @@ export default function LandingPage() {
               strokeOpacity="0.1"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
+              transition={{ delay: 0.5, duration: 1 }}
             />
 
             {/* The dramatic upward line (Smooth Bezier Curve) */}
@@ -108,7 +108,7 @@ export default function LandingPage() {
               className="text-foreground"
               initial={{ pathLength: 0 }}
               animate={{ pathLength: 1 }}
-              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+              transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
             />
 
             {/* Glowing Peak Dot */}
@@ -120,7 +120,7 @@ export default function LandingPage() {
               fill="currentColor"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: [0, 1.5, 1], opacity: 1 }}
-              transition={{ duration: 0.5, delay: 1.2, type: "spring" }}
+              transition={{ duration: 0.8, delay: 1.5, type: "spring" }}
             />
             
             {/* Ripple effect on peak */}
@@ -134,7 +134,7 @@ export default function LandingPage() {
               strokeWidth="2"
               initial={{ scale: 1, opacity: 0 }}
               animate={{ scale: 3, opacity: 0 }}
-              transition={{ duration: 0.8, delay: 1.3, ease: "easeOut" }}
+              transition={{ duration: 1.2, delay: 1.6, ease: "easeOut" }}
             />
           </svg>
         </div>
@@ -149,8 +149,8 @@ export default function LandingPage() {
               initial="hidden"
               animate="visible"
               transition={{ 
-                duration: 0.5, 
-                delay: 0.6 + (index * 0.04), 
+                duration: 0.8, 
+                delay: 0.8 + (index * 0.06), 
                 type: "spring", 
                 bounce: 0.4 
               }}
@@ -166,7 +166,7 @@ export default function LandingPage() {
           className="mt-6 text-muted-foreground font-medium tracking-[0.3em] uppercase text-xs md:text-sm"
           initial={{ opacity: 0, y: 10, filter: "blur(5px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.6, delay: 1.2, ease: "easeOut" }}
+          transition={{ duration: 1, delay: 2.0, ease: "easeOut" }}
         >
           Track Your Progress
         </motion.p>
