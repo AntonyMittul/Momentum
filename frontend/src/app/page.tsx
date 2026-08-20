@@ -6,107 +6,170 @@ import { motion } from "framer-motion";
 
 export default function LandingPage() {
   const router = useRouter();
-  const [isReadyToRedirect, setIsReadyToRedirect] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
 
   useEffect(() => {
-    // Redirect to dashboard after 3.5 seconds (gives animation time to finish completely)
-    const timeout = setTimeout(() => {
-      setIsReadyToRedirect(true);
-      router.push("/dashboard");
+    // 3.5 seconds of awesome animations, then exit transition
+    const exitTimer = setTimeout(() => {
+      setIsExiting(true);
     }, 3500);
 
-    return () => clearTimeout(timeout);
+    const redirectTimer = setTimeout(() => {
+      router.push("/dashboard");
+    }, 4300);
+
+    return () => {
+      clearTimeout(exitTimer);
+      clearTimeout(redirectTimer);
+    };
   }, [router]);
 
+  // Framer motion variants for staggered text
+  const letterVariants = {
+    hidden: { opacity: 0, y: 40, rotateX: -90 },
+    visible: { opacity: 1, y: 0, rotateX: 0 }
+  };
+
+  const title = "MOMENTUM";
+
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center relative overflow-hidden">
-      
-      {/* Container for logo and text */}
+    <motion.div 
+      className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-background"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isExiting ? 0 : 1 }}
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+    >
+      {/* Background Animated Gradients / Glows */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <motion.div 
+          className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-blue-500/10 blur-[120px]"
+          animate={{ 
+            scale: [1, 1.2, 1],
+            x: [0, 50, 0],
+            y: [0, 30, 0]
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+        />
+        <motion.div 
+          className="absolute top-[40%] -right-[10%] w-[40vw] h-[40vw] rounded-full bg-purple-500/10 blur-[100px]"
+          animate={{ 
+            scale: [1, 1.5, 1],
+            x: [0, -40, 0],
+            y: [0, -50, 0]
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+        />
+      </div>
+
+      {/* Main Content Container */}
       <motion.div 
-        className="flex flex-col items-center justify-center z-10"
-        initial={{ opacity: 1, y: 0 }}
-        animate={isReadyToRedirect ? { opacity: 0, y: -20 } : { opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
+        className="relative z-10 flex flex-col items-center"
+        animate={isExiting ? { scale: 1.1, opacity: 0, filter: "blur(10px)" } : { scale: 1, opacity: 1, filter: "blur(0px)" }}
+        transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
       >
-        
-        {/* Animated Logo SVG */}
-        <div className="w-32 h-32 mb-8 relative">
-          <svg 
-            viewBox="0 0 100 100" 
-            fill="none" 
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-full h-full text-foreground"
-          >
-            {/* Grid/Axes background lines (optional, for aesthetics) */}
-            <motion.path
-              d="M 10 90 L 90 90 M 10 90 L 10 10"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeOpacity="0.2"
+        {/* Abstract Animated Logo */}
+        <div className="relative w-48 h-48 mb-8 flex items-center justify-center perspective-1000">
+          {/* Glassmorphic backdrop */}
+          <motion.div 
+            className="absolute inset-0 bg-gradient-to-tr from-foreground/5 to-foreground/10 rounded-[32px] backdrop-blur-2xl border border-foreground/10 shadow-2xl"
+            initial={{ scale: 0.5, rotateY: 90, opacity: 0 }}
+            animate={{ scale: 1, rotateY: 0, opacity: 1 }}
+            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          />
+
+          {/* SVG Graph Animation */}
+          <svg viewBox="0 0 100 100" className="w-24 h-24 absolute z-10 drop-shadow-xl overflow-visible">
+            <defs>
+              <linearGradient id="lineGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="currentColor" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="currentColor" stopOpacity="1" />
+              </linearGradient>
+            </defs>
+            
+            {/* Background Grid Lines for tech feel */}
+            <motion.path 
+              d="M 10 90 L 90 90 M 10 90 L 10 10 M 36 90 L 36 10 M 63 90 L 63 10 M 10 63 L 90 63 M 10 36 L 90 36" 
+              stroke="currentColor" 
+              strokeWidth="0.5" 
+              strokeOpacity="0.1"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 1 }}
+              transition={{ delay: 0.8, duration: 1 }}
             />
 
-            {/* The main trending upward line */}
+            {/* The dramatic upward line (Smooth Bezier Curve) */}
             <motion.path
-              d="M 10 90 L 35 60 L 55 75 L 85 20"
-              stroke="currentColor"
+              d="M 10 85 C 30 85, 25 50, 45 50 C 60 50, 55 20, 90 15"
+              fill="none"
+              stroke="url(#lineGrad)"
               strokeWidth="6"
               strokeLinecap="round"
-              strokeLinejoin="round"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ 
-                duration: 1.5, 
-                ease: "easeInOut",
-                delay: 0.5
-              }}
+              className="text-foreground"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 2, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
             />
 
-            {/* The peak dot */}
+            {/* Glowing Peak Dot */}
             <motion.circle
-              cx="85"
-              cy="20"
+              cx="90"
+              cy="15"
               r="6"
+              className="text-foreground"
               fill="currentColor"
               initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 200, 
-                damping: 10,
-                delay: 1.8 
-              }}
+              animate={{ scale: [0, 1.5, 1], opacity: 1 }}
+              transition={{ duration: 0.8, delay: 2.3, type: "spring" }}
+            />
+            
+            {/* Ripple effect on peak */}
+            <motion.circle
+              cx="90"
+              cy="15"
+              r="6"
+              fill="none"
+              className="text-foreground"
+              stroke="currentColor"
+              strokeWidth="2"
+              initial={{ scale: 1, opacity: 0 }}
+              animate={{ scale: 3, opacity: 0 }}
+              transition={{ duration: 1.5, delay: 2.5, ease: "easeOut" }}
             />
           </svg>
         </div>
 
-        {/* Momentum Title */}
-        <motion.h1 
-          className="text-4xl md:text-5xl font-bold tracking-tight text-foreground"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 1.5 }}
+        {/* Staggered Text Reveal */}
+        <div className="flex space-x-1 perspective-1000 mt-2">
+          {title.split("").map((char, index) => (
+            <motion.span
+              key={index}
+              className="text-5xl md:text-7xl font-extrabold tracking-tighter text-foreground drop-shadow-sm"
+              variants={letterVariants}
+              initial="hidden"
+              animate="visible"
+              transition={{ 
+                duration: 0.8, 
+                delay: 1.2 + (index * 0.08), 
+                type: "spring", 
+                bounce: 0.4 
+              }}
+              style={{ transformStyle: "preserve-3d" }}
+            >
+              {char}
+            </motion.span>
+          ))}
+        </div>
+        
+        {/* Subtle Subtitle */}
+        <motion.p
+          className="mt-6 text-muted-foreground font-medium tracking-[0.3em] uppercase text-xs md:text-sm"
+          initial={{ opacity: 0, y: 10, filter: "blur(5px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration: 1, delay: 2.5, ease: "easeOut" }}
         >
-          Momentum
-        </motion.h1>
-
-        {/* Tagline / Loading state */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }}
-          transition={{ duration: 0.8, delay: 2.2 }}
-          className="mt-6 flex items-center space-x-2"
-        >
-          <div className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-          <div className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-          <div className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce"></div>
-        </motion.div>
-
+          Track Your Progress
+        </motion.p>
       </motion.div>
-      
-    </div>
+    </motion.div>
   );
 }
