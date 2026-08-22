@@ -1,0 +1,18 @@
+name: Weekly Automated Report
+
+on:
+  schedule:
+    # Runs at 8:00 PM IST every Saturday (UTC: 14:30 on Saturday)
+    - cron: '30 14 * * 6'
+  workflow_dispatch:
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Weekly Report Generation
+        run: |
+          curl -X POST "https://momentum-aj3j.onrender.com/api/cron/weekly-report" \
+          -H "x-cron-secret: ${{ secrets.CRON_SECRET_KEY }}" \
+          -m 120 -s > /dev/null || true
+          echo "Triggered weekly automated report!"

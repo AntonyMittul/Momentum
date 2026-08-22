@@ -27,6 +27,14 @@ class PDF(FPDF):
 
 @router.get("/weekly")
 def get_weekly_report(db: Session = Depends(get_db)):
+    pdf_bytes, end_of_week = generate_weekly_pdf_bytes(db)
+    return Response(
+        content=bytes(pdf_bytes), 
+        media_type="application/pdf", 
+        headers={"Content-Disposition": f'attachment; filename="Momentum_Weekly_Report_{end_of_week}.pdf"'}
+    )
+
+def generate_weekly_pdf_bytes(db: Session):
     today = get_ist_date()
     
     # Python weekday(): Monday=0, Sunday=6
@@ -200,4 +208,4 @@ def get_weekly_report(db: Session = Depends(get_db)):
     # Output returns bytearray in fpdf2
     pdf_bytes = pdf.output()
     
-    return Response(content=bytes(pdf_bytes), media_type="application/pdf", headers={"Content-Disposition": f'attachment; filename="Momentum_Weekly_Report_{end_of_week}.pdf"'})
+    return pdf_bytes, end_of_week
