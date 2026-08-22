@@ -10,9 +10,14 @@ jobs:
   send-report:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Trigger Weekly Report Generation
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         run: |
-          curl -X POST "https://momentum-aj3j.onrender.com/api/cron/weekly-report" \
+          RESPONSE=$(curl -X POST "https://momentum-aj3j.onrender.com/api/cron/weekly-report" \
           -H "x-cron-secret: ${{ secrets.CRON_SECRET_KEY }}" \
-          -m 120 -s > /dev/null || true
-          echo "Triggered weekly automated report!"
+          -m 120 -s)
+          echo "Triggered weekly automated report! Response received."
+          python .github/scripts/send_email.py "$RESPONSE"

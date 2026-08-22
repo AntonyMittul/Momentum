@@ -5,7 +5,7 @@ import os
 import models
 from database import get_db
 from routers.reports import generate_weekly_pdf_bytes, get_ist_date
-from routers.email_utils import send_email
+import base64
 
 router = APIRouter(prefix="/cron", tags=["Cron Jobs"])
 
@@ -63,11 +63,12 @@ def run_inactivity_check(db: Session = Depends(get_db), authorized: bool = Depen
         <p>Log in: <a href="https://momentum-self-improvement.vercel.app/">Momentum App</a></p>
         {weekly_goals_html}
         """
-        success = send_email(
-            subject="Momentum: Time to plan your day!",
-            html_body=html
-        )
-        return {"status": "sent_no_tasks", "success": success}
+        return {
+            "status": "sent_no_tasks",
+            "send_email": True,
+            "subject": "Momentum: Time to plan your day!",
+            "html_body": html
+        }
 
     # 2. Check for pending tasks > 6 hours old OR if it's the end of the day (e.g. 9 PM IST check)
     pending_tasks = [t for t in tasks_today if t.status != "Completed"]
@@ -96,11 +97,12 @@ def run_inactivity_check(db: Session = Depends(get_db), authorized: bool = Depen
             <p>Log in: <a href="https://momentum-self-improvement.vercel.app/">Momentum App</a></p>
             {weekly_goals_html}
             """
-            success = send_email(
-                subject=f"Momentum: You have {len(pending_tasks)} pending tasks",
-                html_body=html
-            )
-            return {"status": "sent_pending_tasks", "success": success}
+            return {
+                "status": "sent_pending_tasks",
+                "send_email": True,
+                "subject": f"Momentum: You have {len(pending_tasks)} pending tasks",
+                "html_body": html
+            }
 
     return {"status": "no_reminder_needed", "reason": "All tasks completed or none are > 6 hours old yet"}
 
@@ -124,17 +126,14 @@ def run_weekly_report_cron(db: Session = Depends(get_db), authorized: bool = Dep
     """
     
     filename = f"Momentum_Weekly_Report_{end_of_week}.pdf"
-    success = send_email(
-        subject=f"Momentum Weekly Report: {end_of_week}",
-        html_body=html,
-        attachment_bytes=bytes(pdf_bytes),
-        attachment_name=filename
-    )
-
-    if success:
-        return {"status": "success", "message": "Weekly report emailed successfully"}
-    else:
-        raise HTTPException(status_code=500, detail="Failed to send email")
+    return {
+        "status": "success",
+        "send_email": True,
+        "subject": f"Momentum Weekly Report: {end_of_week}",
+        "html_body": html,
+        "attachment_base64": base64.b64encode(bytes(pdf_bytes)).decode('utf-8'),
+        "attachment_name": filename
+    }
 
 @router.post("/weekly-goals-reminder")
 def run_weekly_goals_reminder(db: Session = Depends(get_db), authorized: bool = Depends(verify_cron_secret)):
@@ -169,13 +168,10 @@ def run_weekly_goals_reminder(db: Session = Depends(get_db), authorized: bool = 
     <p>Log in and knock them out: <a href="https://momentum-self-improvement.vercel.app/">Momentum App</a></p>
     """
     
-    success = send_email(
-        subject="Momentum: Weekly Goals Check-in",
-        html_body=html
-    )
-    
-    if success:
-        return {"status": "sent_goals_reminder", "success": True}
-    else:
-        raise HTTPException(status_code=500, detail="Failed to send goals reminder email")
+    return {
+        "status": "sent_goals_reminder",
+        "send_email": True,
+        "subject": "Momentum: Weekly Goals Check-in",
+        "html_body": html
+    }
 

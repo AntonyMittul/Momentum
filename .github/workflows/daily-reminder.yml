@@ -10,9 +10,14 @@ jobs:
   check-inactivity:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Trigger Daily Inactivity Check
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         run: |
-          curl -X POST "https://momentum-aj3j.onrender.com/api/cron/inactivity-check" \
+          RESPONSE=$(curl -X POST "https://momentum-aj3j.onrender.com/api/cron/inactivity-check" \
           -H "x-cron-secret: ${{ secrets.CRON_SECRET_KEY }}" \
-          -m 30 -s > /dev/null || true
-          echo "Triggered daily inactivity check!"
+          -m 30 -s)
+          echo "Triggered daily inactivity check! Response received."
+          python .github/scripts/send_email.py "$RESPONSE"
