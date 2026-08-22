@@ -18,6 +18,6 @@ jobs:
         run: |
           RESPONSE=$(curl -X POST "https://momentum-aj3j.onrender.com/api/cron/weekly-goals-reminder" \
           -H "x-cron-secret: ${{ secrets.CRON_SECRET_KEY }}" \
-          -m 30 -s)
+          -m 120 -s)
           echo "Triggered bi-daily goals reminder! Response received."
           python .github/scripts/send_email.py "$RESPONSE"
