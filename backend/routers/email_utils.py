@@ -33,10 +33,8 @@ def send_email(subject: str, html_body: str, attachment_bytes: bytes = None, att
         msg.attach(part)
 
     try:
-        # Use TLS
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.ehlo()
-            server.starttls()
+        # Use SSL on port 465 to bypass potential Render port 587 blocking
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=15) as server:
             server.login(sender_email, sender_password)
             server.send_message(msg)
         return True
