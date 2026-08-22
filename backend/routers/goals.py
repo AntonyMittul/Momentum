@@ -1,17 +1,33 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import models, schemas
 from database import get_db
 
 router = APIRouter()
 
+def get_ist_now():
+    return datetime.utcnow() + timedelta(hours=5, minutes=30)
+
 @router.get("/", response_model=List[schemas.Goal])
 def read_goals(skip: int = 0, limit: int = 1000, db: Session = Depends(get_db)):
     goals = db.query(models.Goal).order_by(models.Goal.created_at.desc()).offset(skip).limit(limit).all()
-    return goals
+    
+    now = get_ist_now()
+    days_since_sunday = (now.weekday() + 1) % 7
+    start_of_week = (now - timedelta(days=days_since_sunday)).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    filtered_goals = []
+    for g in goals:
+        if g.type == 'weekly':
+            if g.created_at >= start_of_week:
+                filtered_goals.append(g)
+        else:
+            filtered_goals.append(g)
+            
+    return filtered_goals
 
 @router.post("/", response_model=schemas.Goal)
 def create_goal(goal: schemas.GoalCreate, db: Session = Depends(get_db)):

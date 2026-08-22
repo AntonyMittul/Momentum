@@ -28,6 +28,26 @@ def run_inactivity_check(db: Session = Depends(get_db), authorized: bool = Depen
     now_utc = datetime.utcnow()
     ist_now = now_utc + timedelta(hours=5, minutes=30)
     today = ist_now.date()
+    
+    # Calculate start of week (Sunday) for weekly goals
+    days_since_sunday = (ist_now.weekday() + 1) % 7
+    start_of_week = (ist_now - timedelta(days=days_since_sunday)).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Get pending weekly goals
+    weekly_goals = db.query(models.Goal).filter(
+        models.Goal.type == 'weekly',
+        models.Goal.created_at >= start_of_week
+    ).all()
+    pending_weekly_goals = [g for g in weekly_goals if g.status != "Completed"]
+    
+    weekly_goals_html = ""
+    if pending_weekly_goals:
+        goals_list = "".join([f"<li>{g.title}</li>" for g in pending_weekly_goals])
+        weekly_goals_html = f"""
+        <hr style="margin-top: 20px; border: 1px solid #eee;" />
+        <h3>🎯 This Week's Pending Goals</h3>
+        <ul>{goals_list}</ul>
+        """
 
     # Get today's tasks
     tasks_today = db.query(models.Task).filter(
@@ -36,11 +56,12 @@ def run_inactivity_check(db: Session = Depends(get_db), authorized: bool = Depen
 
     # 1. No tasks created today check
     if len(tasks_today) == 0:
-        html = """
+        html = f"""
         <h2>Momentum Inactivity Reminder</h2>
         <p>Hi Antony,</p>
         <p>You haven't created any tasks for today yet. Take a moment to plan your day and keep your momentum going!</p>
         <p>Log in: <a href="https://momentum-self-improvement.vercel.app/">Momentum App</a></p>
+        {weekly_goals_html}
         """
         success = send_email(
             subject="Momentum: Time to plan your day!",
@@ -73,6 +94,7 @@ def run_inactivity_check(db: Session = Depends(get_db), authorized: bool = Depen
             </ul>
             <p>Don't lose your momentum! Log in and check them off.</p>
             <p>Log in: <a href="https://momentum-self-improvement.vercel.app/">Momentum App</a></p>
+            {weekly_goals_html}
             """
             success = send_email(
                 subject=f"Momentum: You have {len(pending_tasks)} pending tasks",
@@ -113,3 +135,47 @@ def run_weekly_report_cron(db: Session = Depends(get_db), authorized: bool = Dep
         return {"status": "success", "message": "Weekly report emailed successfully"}
     else:
         raise HTTPException(status_code=500, detail="Failed to send email")
+
+@router.post("/weekly-goals-reminder")
+def run_weekly_goals_reminder(db: Session = Depends(get_db), authorized: bool = Depends(verify_cron_secret)):
+    """
+    Sends a bi-daily reminder of pending weekly goals.
+    """
+    now_utc = datetime.utcnow()
+    ist_now = now_utc + timedelta(hours=5, minutes=30)
+    
+    days_since_sunday = (ist_now.weekday() + 1) % 7
+    start_of_week = (ist_now - timedelta(days=days_since_sunday)).replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    weekly_goals = db.query(models.Goal).filter(
+        models.Goal.type == 'weekly',
+        models.Goal.created_at >= start_of_week
+    ).all()
+    
+    pending_goals = [g for g in weekly_goals if g.status != "Completed"]
+    
+    if not pending_goals:
+        return {"status": "no_reminder_needed", "reason": "No pending weekly goals"}
+        
+    goals_list = "".join([f"<li>{g.title}</li>" for g in pending_goals])
+    
+    html = f"""
+    <h2>🎯 Momentum Goals Reminder</h2>
+    <p>Hi Antony,</p>
+    <p>Just checking in on your goals for this week! You still have the following goals pending:</p>
+    <ul>
+        {goals_list}
+    </ul>
+    <p>Log in and knock them out: <a href="https://momentum-self-improvement.vercel.app/">Momentum App</a></p>
+    """
+    
+    success = send_email(
+        subject="Momentum: Weekly Goals Check-in",
+        html_body=html
+    )
+    
+    if success:
+        return {"status": "sent_goals_reminder", "success": True}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send goals reminder email")
+
