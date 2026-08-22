@@ -60,7 +60,7 @@ def run_inactivity_check(db: Session = Depends(get_db), authorized: bool = Depen
         <h2>Momentum Inactivity Reminder</h2>
         <p>Hi Antony,</p>
         <p>You haven't created any tasks for today yet. Take a moment to plan your day and keep your momentum going!</p>
-        <p>Open Momentum: <a href="https://momentum-self-improvement.vercel.app/">https://momentum-self-improvement.vercel.app/</a></p>
+        <p>Open Momentum: <a href="https://momentum-kappa-nine.vercel.app/">https://momentum-kappa-nine.vercel.app/</a></p>
         {weekly_goals_html}
         """
         return {
@@ -94,7 +94,7 @@ def run_inactivity_check(db: Session = Depends(get_db), authorized: bool = Depen
                 {task_list_html}
             </ul>
             <p>Don't lose your momentum! Open the app and check them off.</p>
-            <p>Open Momentum: <a href="https://momentum-self-improvement.vercel.app/">https://momentum-self-improvement.vercel.app/</a></p>
+            <p>Open Momentum: <a href="https://momentum-kappa-nine.vercel.app/">https://momentum-kappa-nine.vercel.app/</a></p>
             {weekly_goals_html}
             """
             return {
@@ -165,7 +165,7 @@ def run_weekly_goals_reminder(db: Session = Depends(get_db), authorized: bool = 
     <ul>
         {goals_list}
     </ul>
-    <p>Open Momentum and knock them out: <a href="https://momentum-self-improvement.vercel.app/">https://momentum-self-improvement.vercel.app/</a></p>
+    <p>Open Momentum and knock them out: <a href="https://momentum-kappa-nine.vercel.app/">https://momentum-kappa-nine.vercel.app/</a></p>
     """
     
     return {
