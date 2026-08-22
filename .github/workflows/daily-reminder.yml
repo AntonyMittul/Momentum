@@ -16,8 +16,9 @@ jobs:
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         run: |
-          RESPONSE=$(curl -X POST "https://momentum-aj3j.onrender.com/api/cron/inactivity-check" \
+          RESPONSE=$(curl -v -X POST "https://momentum-aj3j.onrender.com/api/cron/inactivity-check" \
           -H "x-cron-secret: ${{ secrets.CRON_SECRET_KEY }}" \
           -m 120 -s)
-          echo "Triggered daily inactivity check! Response received."
+          echo "Raw response:"
+          echo "$RESPONSE"
           python .github/scripts/send_email.py "$RESPONSE"
