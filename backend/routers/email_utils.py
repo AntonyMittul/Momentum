@@ -11,7 +11,7 @@ def send_email(subject: str, html_body: str, attachment_bytes: bytes = None, att
     Requires GMAIL_ADDRESS and GMAIL_APP_PASSWORD environment variables.
     """
     sender_email = os.getenv("GMAIL_ADDRESS")
-    sender_password = os.getenv("GMAIL_APP_PASSWORD")
+    sender_password = os.getenv("GMAIL_APP_PASSWORD", "").replace(" ", "")
     recipient_email = "antonymittul@gmail.com"
 
     if not sender_email or not sender_password:
