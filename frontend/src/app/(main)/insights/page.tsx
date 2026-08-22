@@ -8,11 +8,8 @@ import { format, subDays, parseISO } from "date-fns";
 export default function InsightsPage() {
   const [metrics, setMetrics] = useState<any[]>([]);
   const [nnMetrics, setNnMetrics] = useState<any[]>([]);
-  const isSunday = new Date().getDay() === 0;
 
-  const handleDownloadReport = () => {
-    window.open(`${API_BASE_URL}/api/reports/weekly?t=${Date.now()}`, "_blank");
-  };
+
 
   useEffect(() => {
     async function load() {
@@ -71,16 +68,6 @@ export default function InsightsPage() {
         <div>
           <h1 className="text-4xl font-bold tracking-tight text-foreground">Insights</h1>
           <p className="text-sm text-gray-500 mt-2">Track your momentum and get your weekly AI review.</p>
-        </div>
-        <div>
-          <button 
-            onClick={handleDownloadReport}
-            disabled={!isSunday}
-            className={`px-4 py-2 flex items-center gap-2 text-sm font-medium ${isSunday ? 'bg-foreground text-background hover:opacity-80' : 'bg-muted text-muted-foreground border border-border cursor-not-allowed'} transition-colors duration-500`}
-            title={!isSunday ? "Available on Sundays" : "Download Weekly AI Report"}
-          >
-            Download Weekly Report
-          </button>
         </div>
       </header>
 
