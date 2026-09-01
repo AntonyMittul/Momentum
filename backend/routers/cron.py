@@ -27,6 +27,11 @@ def run_inactivity_check(db: Session = Depends(get_db), authorized: bool = Depen
     """
     now_utc = datetime.utcnow()
     ist_now = now_utc + timedelta(hours=5, minutes=30)
+    
+    # Failsafe: Only allow emails between 9 AM and 9 PM IST
+    if not (9 <= ist_now.hour < 21):
+        return {"status": "no_reminder_needed", "reason": f"Outside of 9 AM - 9 PM window (Current hour: {ist_now.hour})"}
+        
     today = ist_now.date()
     
     # Calculate start of week (Sunday) for weekly goals
@@ -142,6 +147,10 @@ def run_weekly_goals_reminder(db: Session = Depends(get_db), authorized: bool = 
     """
     now_utc = datetime.utcnow()
     ist_now = now_utc + timedelta(hours=5, minutes=30)
+    
+    # Failsafe: Only allow emails between 9 AM and 9 PM IST
+    if not (9 <= ist_now.hour < 21):
+        return {"status": "no_reminder_needed", "reason": f"Outside of 9 AM - 9 PM window (Current hour: {ist_now.hour})"}
     
     days_since_sunday = (ist_now.weekday() + 1) % 7
     start_of_week = (ist_now - timedelta(days=days_since_sunday)).replace(hour=0, minute=0, second=0, microsecond=0)
